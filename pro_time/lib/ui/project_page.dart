@@ -1,12 +1,13 @@
 import 'dart:async';
-
+import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_time/model/project.dart';
 import 'package:pro_time/resources/controls.dart';
 
 class ProjectPage extends StatefulWidget {
-  ProjectPage(this.projectName);
+  ProjectPage(this.project);
 
-  final String projectName;
+  final Project project;
 
   @override
   _ProjectPageState createState() => _ProjectPageState();
@@ -16,6 +17,7 @@ class _ProjectPageState extends State<ProjectPage>
     with TickerProviderStateMixin {
   Timer _timer;
   Timer _blinkTimer;
+  DateTime _started;
   int _secondsCounter = 0;
   Duration _oneSec = const Duration(seconds: 1);
   Duration _halfSec = const Duration(milliseconds: 500);
@@ -50,7 +52,7 @@ class _ProjectPageState extends State<ProjectPage>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        widget.projectName,
+                        widget.project.name,
                         style: TextStyle(
                           fontSize: 40.0,
                           fontWeight: FontWeight.w900,
@@ -126,6 +128,7 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   _startTimer() {
+    if (_secondsCounter == 0) _started = DateTime.now();
     _timer = Timer.periodic(
       _oneSec,
       (Timer timer) => setState(() {
@@ -142,7 +145,12 @@ class _ProjectPageState extends State<ProjectPage>
 
   _stopTimer() {
     _timer.cancel();
-    // TODO: Save secondsCounter as activity
+    Activity activity = Activity(
+      dateTimeStart: _started,
+      activityDuration: Duration(seconds: _secondsCounter),
+    );
+    widget.project.activities.add(activity);
+    Hive.box('projects').put(widget.project.id, widget.project);
     setState(() {
       _secondsCounter = 0;
     });
@@ -212,6 +220,10 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   Widget _buildTotTime() {
+    Duration totalTime = widget.project.getTotalTime();
+    String hrs = totalTime.inHours.toString() + "H\n";
+    String mins = (totalTime.inMinutes % 60).toString() + "m\n";
+    String secs = (totalTime.inSeconds % 60).toString() + "s";
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
@@ -226,16 +238,23 @@ class _ProjectPageState extends State<ProjectPage>
             ),
           ),
           TextSpan(
-            text: "3H\n",
+            text: hrs,
             style: TextStyle(
               fontSize: 40.0,
               height: 1.2,
             ),
           ),
           TextSpan(
-            text: "21m",
+            text: mins,
             style: TextStyle(
               fontSize: 20.0,
+              height: 0.9,
+            ),
+          ),
+          TextSpan(
+            text: secs,
+            style: TextStyle(
+              fontSize: 16.0,
               height: 0.9,
             ),
           ),
@@ -245,6 +264,10 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   Widget _buildAvgTime() {
+    Duration totalTime = widget.project.getAverageTime();
+    String hrs = totalTime.inHours.toString() + "H\n";
+    String mins = (totalTime.inMinutes % 60).toString() + "m\n";
+    String secs = (totalTime.inSeconds % 60).toString() + "s";
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
@@ -259,16 +282,23 @@ class _ProjectPageState extends State<ProjectPage>
             ),
           ),
           TextSpan(
-            text: "3H\n",
+            text: hrs,
             style: TextStyle(
               fontSize: 40.0,
               height: 1.2,
             ),
           ),
           TextSpan(
-            text: "21m",
+            text: mins,
             style: TextStyle(
               fontSize: 20.0,
+              height: 0.9,
+            ),
+          ),
+          TextSpan(
+            text: secs,
+            style: TextStyle(
+              fontSize: 16.0,
               height: 0.9,
             ),
           ),

@@ -10,10 +10,16 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.2
+  flutter_material_color_picker: ^1.0.5
+  hive: ^1.0.0
+  hive_flutter: any
+  path_provider: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  hive_generator: ^0.5.2
+  build_runner: ^1.7.1
 
 flutter:
   uses-material-design: true

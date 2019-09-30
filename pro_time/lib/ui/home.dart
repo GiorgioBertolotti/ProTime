@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pro_time/ui/project.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pro_time/model/project.dart';
+import 'package:pro_time/resources/new_project_dialog.dart';
+import 'package:pro_time/ui/project_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:hive/hive.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,6 +12,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Future _openBoxes() async {
+    var dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
+    return Future.wait([
+      Hive.openBox('projects'),
+    ]);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -14,7 +32,12 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.grey[900],
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // TODO: Dialog add project
+            showDialog(
+              context: context,
+              builder: (ctx) {
+                return NewProjectDialog();
+              },
+            );
           },
           backgroundColor: Colors.white,
           child: Icon(
@@ -42,22 +65,56 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 30.0),
-            ListView(
-              physics: BouncingScrollPhysics(),
-              shrinkWrap: true,
-              children: <Widget>[
-                _buildProjectTile("PWSWatcher",
-                    backgroundColor: Colors.redAccent, textColor: Colors.black),
-                _buildProjectTile("PWSWatcher",
-                    backgroundColor: Colors.lightBlue, textColor: Colors.black),
-                _buildProjectTile("PWSWatcher",
-                    backgroundColor: Colors.lightGreen,
-                    textColor: Colors.black),
-                _buildProjectTile("PWSWatcher",
-                    backgroundColor: Colors.blue, textColor: Colors.white),
-                _buildProjectTile("PWSWatcher",
-                    backgroundColor: Colors.yellow, textColor: Colors.black),
-              ],
+            FutureBuilder(
+              future: _openBoxes(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.error != null) {
+                    return Container();
+                  } else {
+                    return Expanded(
+                      child: WatchBoxBuilder(
+                        box: Hive.box('projects'),
+                        builder: (ctx, box) {
+                          var projects = box.values.toList().cast<Project>();
+                          if (projects.length == 0)
+                            return Center(
+                              child: FlatButton(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) {
+                                      return NewProjectDialog();
+                                    },
+                                  );
+                                },
+                                child: Text(
+                                  "Add a project",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 30.0),
+                                ),
+                              ),
+                            );
+                          else
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              itemCount: box.length,
+                              itemBuilder: (bctx, index) {
+                                Project project = projects[index];
+                                return _buildProjectTile(project);
+                              },
+                            );
+                        },
+                      ),
+                    );
+                  }
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
             ),
           ],
         ),
@@ -65,13 +122,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildProjectTile(String projectName,
-      {Color backgroundColor = Colors.white, Color textColor = Colors.black}) {
+  Widget _buildProjectTile(Project project) {
+    Duration totalTime = project.getTotalTime();
+    String hrs = totalTime.inHours.toString() + "H\n";
+    String mins = totalTime.inMinutes.toString() + "m";
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30.0),
-        color: backgroundColor,
+        color: project.mainColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -86,7 +145,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ProjectPage(projectName),
+                builder: (context) => ProjectPage(project),
               ),
             );
           },
@@ -98,9 +157,9 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  projectName,
+                  project.name,
                   style: TextStyle(
-                    color: textColor,
+                    color: project.textColor,
                     fontSize: 30.0,
                     fontWeight: FontWeight.w900,
                   ),
@@ -108,13 +167,13 @@ class _HomePageState extends State<HomePage> {
                 RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    style: TextStyle(color: textColor),
+                    style: TextStyle(color: project.textColor),
                     children: [
                       TextSpan(
-                          text: "3H\n",
+                          text: hrs,
                           style: TextStyle(fontSize: 30.0, height: 0.9)),
                       TextSpan(
-                          text: "21m",
+                          text: mins,
                           style: TextStyle(fontSize: 16.0, height: 0.9)),
                     ],
                   ),

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:pro_time/resources/activity_adapter.dart';
+import 'package:pro_time/resources/projects_adapter.dart';
 import 'package:pro_time/ui/home.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  Hive.registerAdapter(ProjectsAdapter(), 35);
+  Hive.registerAdapter(ActivityAdapter(), 36);
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
