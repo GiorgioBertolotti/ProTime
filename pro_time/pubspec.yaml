@@ -20,6 +20,7 @@ dev_dependencies:
     sdk: flutter
   hive_generator: ^0.5.2
   build_runner: ^1.7.1
+  flutter_launcher_icons: "^0.7.3"
 
 flutter:
   uses-material-design: true
@@ -27,3 +28,8 @@ flutter:
     - assets/play.png
     - assets/pause.png
     - assets/stop.png
+
+flutter_icons:
+  android: "launcher_icon" 
+  ios: true
+  image_path: "assets/icon.png"
