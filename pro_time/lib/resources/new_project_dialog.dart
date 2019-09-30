@@ -88,6 +88,8 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
               name: _nameController.text,
               mainColor: _selectedMainColor,
               textColor: _selectedTextColor,
+              created: DateTime.now(),
+              activities: List<Activity>(),
             );
             Hive.box("projects").put(toAdd.id, toAdd);
             Navigator.of(context).pop();
