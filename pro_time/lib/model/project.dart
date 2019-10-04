@@ -21,7 +21,7 @@ class Project {
       return Duration(seconds: 0);
     int seconds = 0;
     for (Activity a in activities) {
-      seconds += a.activityDuration.inSeconds;
+      seconds += a.getDuration().inSeconds;
     }
     return Duration(seconds: seconds);
   }
@@ -31,7 +31,7 @@ class Project {
       return Duration(seconds: 0);
     int seconds = 0;
     for (Activity a in activities) {
-      seconds += a.activityDuration.inSeconds;
+      seconds += a.getDuration().inSeconds;
     }
     seconds = (seconds ~/ activities.length);
     return Duration(seconds: seconds);
@@ -39,8 +39,37 @@ class Project {
 }
 
 class Activity {
-  Activity({this.dateTimeStart, this.activityDuration});
+  List<SubActivity> subActivities = List();
+
+  Duration getDuration() {
+    if (subActivities == null || subActivities.length == 0)
+      return Duration(seconds: 0);
+    int seconds = 0;
+    for (SubActivity subActivity in subActivities) {
+      seconds += subActivity.getDuration().inSeconds;
+    }
+    return Duration(seconds: seconds);
+  }
+
+  DateTime getFirstStarted() {
+    if (subActivities == null || subActivities.length == 0)
+      return DateTime.now();
+    DateTime first = subActivities[0].dateTimeStart;
+    for (int i = 1; i < subActivities.length; i++) {
+      if (subActivities[i].dateTimeStart.isBefore(first))
+        first = subActivities[i].dateTimeStart;
+    }
+    return first;
+  }
+}
+
+class SubActivity {
+  SubActivity({this.dateTimeStart, this.activityDuration});
 
   DateTime dateTimeStart;
   Duration activityDuration;
+
+  Duration getDuration() {
+    return activityDuration;
+  }
 }

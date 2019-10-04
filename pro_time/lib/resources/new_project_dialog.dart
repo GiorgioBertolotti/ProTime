@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:hive/hive.dart';
 
@@ -102,14 +102,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
   _openMainColorPicker() {
     _openDialog(
       "Main color picker",
-      MaterialColorPicker(
-        allowShades: false,
-        selectedColor: _selectedMainColor,
-        onMainColorChange: (color) {
-          setState(() {
-            _tmpMainColor = color;
-          });
-        },
+      SingleChildScrollView(
+        child: ColorPicker(
+          pickerColor: _selectedMainColor ?? Colors.white,
+          onColorChanged: (color) {
+            setState(() {
+              _tmpMainColor = color;
+            });
+          },
+          enableLabel: true,
+          pickerAreaHeightPercent: 0.8,
+        ),
       ),
     );
   }
@@ -117,14 +120,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
   _openTextColorPicker() {
     _openDialog(
       "Text color picker",
-      MaterialColorPicker(
-        allowShades: false,
-        selectedColor: _selectedTextColor,
-        onMainColorChange: (color) {
-          setState(() {
-            _tmpTextColor = color;
-          });
-        },
+      SingleChildScrollView(
+        child: ColorPicker(
+          pickerColor: _selectedTextColor ?? Colors.white,
+          onColorChanged: (color) {
+            setState(() {
+              _tmpTextColor = color;
+            });
+          },
+          enableLabel: true,
+          pickerAreaHeightPercent: 0.8,
+        ),
       ),
     );
   }

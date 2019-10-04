@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:pro_time/main.dart';
 
 class TimerControls extends StatefulWidget {
-  TimerControls({this.startCallback, this.pauseCallback, this.stopCallback});
+  TimerControls({
+    this.startCallback,
+    this.pauseCallback,
+    this.stopCallback,
+    this.initialState = TimerState.STOPPED,
+    this.enabled = true,
+  });
 
   final Function startCallback;
   final Function stopCallback;
   final Function pauseCallback;
+  final TimerState initialState;
+  final bool enabled;
 
   @override
   _TimerControlsState createState() => _TimerControlsState();
 }
 
-enum TimerState { STOPPED, STARTED, PAUSED }
-
 class _TimerControlsState extends State<TimerControls> {
   TimerState _state = TimerState.STOPPED;
+
+  @override
+  void initState() {
+    if (widget.enabled) _state = widget.initialState;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (_state) {
@@ -59,7 +73,9 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: widget.enabled,
           onTap: () {
+            if (!widget.enabled) return;
             setState(() {
               _state = TimerState.STARTED;
             });
@@ -98,7 +114,9 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: widget.enabled,
           onTap: () {
+            if (!widget.enabled) return;
             setState(() {
               _state = TimerState.STOPPED;
             });
@@ -137,7 +155,9 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          enableFeedback: widget.enabled,
           onTap: () {
+            if (!widget.enabled) return;
             setState(() {
               _state = TimerState.PAUSED;
             });

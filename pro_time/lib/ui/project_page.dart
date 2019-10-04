@@ -1,8 +1,11 @@
 import 'dart:async';
-import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
+import 'package:pro_time/resources/application_state.dart';
 import 'package:pro_time/resources/controls.dart';
+import 'package:provider/provider.dart';
 
 class ProjectPage extends StatefulWidget {
   ProjectPage(this.project);
@@ -15,13 +18,11 @@ class ProjectPage extends StatefulWidget {
 
 class _ProjectPageState extends State<ProjectPage>
     with TickerProviderStateMixin {
-  Timer _timer;
   Timer _blinkTimer;
-  DateTime _started;
-  int _secondsCounter = 0;
-  Duration _oneSec = const Duration(seconds: 1);
-  Duration _halfSec = const Duration(milliseconds: 500);
+  Duration _halfSec = const Duration(milliseconds: 0500);
   bool _timerVisibility = true;
+  bool _first = true;
+  ScrollController _controller = new ScrollController();
 
   @override
   void initState() {
@@ -30,97 +31,141 @@ class _ProjectPageState extends State<ProjectPage>
 
   @override
   void dispose() {
-    if (_timer != null) _timer.cancel();
     if (_blinkTimer != null) _blinkTimer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ApplicationState appState = Provider.of<ApplicationState>(context);
+    if (_first) {
+      _first = false;
+      if ((appState.getCurrentProject() == null ||
+              appState.getCurrentProject().id == widget.project.id) &&
+          appState.timerState == TimerState.STARTED) _startBlink();
+    }
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.grey[900],
-        body: Stack(
+        body: ListView(
+          controller: _controller,
+          physics: BouncingScrollPhysics(),
+          shrinkWrap: true,
           children: <Widget>[
-            Column(
-              children: <Widget>[
-                SizedBox(height: 20.0),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+            Container(
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top,
+              child: Stack(
+                children: <Widget>[
+                  Column(
                     children: <Widget>[
-                      Text(
-                        widget.project.name,
-                        style: TextStyle(
-                          fontSize: 40.0,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                      SizedBox(height: 20.0),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                widget.project.name,
+                                style: TextStyle(
+                                  fontSize: 40.0,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 30.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        icon: Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 30.0,
+                      SizedBox(height: 50.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          _buildTotTime(),
+                          _buildAvgTime(),
+                        ],
+                      ),
+                      SizedBox(height: 80.0),
+                      Center(
+                        child: Opacity(
+                          opacity: _timerVisibility ? 1 : 0,
+                          child: _buildTimer(),
+                        ),
+                      ),
+                      SizedBox(height: 20.0),
+                      Center(
+                        child: TimerControls(
+                          startCallback: _startTimer,
+                          pauseCallback: _pauseTimer,
+                          stopCallback: _stopTimer,
+                          initialState: appState.timerState,
+                          enabled: appState.getCurrentProject() == null ||
+                              appState.getCurrentProject().id ==
+                                  widget.project.id,
                         ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(height: 50.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    _buildTotTime(),
-                    _buildAvgTime(),
-                  ],
-                ),
-                SizedBox(height: 80.0),
-                Center(
-                  child: Opacity(
-                    opacity: _timerVisibility ? 1 : 0,
-                    child: _buildTimer(),
-                  ),
-                ),
-                SizedBox(height: 20.0),
-                Center(
-                  child: TimerControls(
-                    startCallback: _startTimer,
-                    pauseCallback: _pauseTimer,
-                    stopCallback: _stopTimer,
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              bottom: 20.0,
-              left: 0.0,
-              right: 0.0,
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    "Details",
-                    style: TextStyle(color: Colors.white, fontSize: 30.0),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                      size: 30.0,
-                    ),
-                    onPressed: () {
-                      // TODO: Open project details page
-                    },
-                  )
+                  (widget.project.activities != null &&
+                          widget.project.activities.length > 0)
+                      ? Positioned(
+                          bottom: 20.0,
+                          left: 0.0,
+                          right: 0.0,
+                          child: Column(
+                            children: <Widget>[
+                              Text(
+                                "Details",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 30.0),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                  size: 30.0,
+                                ),
+                                onPressed: () {
+                                  _controller.animateTo(
+                                      MediaQuery.of(context).size.height -
+                                          MediaQuery.of(context).padding.top -
+                                          20,
+                                      duration:
+                                          const Duration(milliseconds: 500),
+                                      curve: Curves.easeOut);
+                                },
+                              )
+                            ],
+                          ),
+                        )
+                      : Container(),
                 ],
               ),
-            )
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: BouncingScrollPhysics(),
+              itemCount: widget.project.activities.length,
+              itemBuilder: (bctx, index) {
+                Activity activity = widget.project.activities[index];
+                return _buildActivityTile(activity);
+              },
+            ),
           ],
         ),
       ),
@@ -128,33 +173,23 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   _startTimer() {
-    if (_secondsCounter == 0) _started = DateTime.now();
-    _timer = Timer.periodic(
-      _oneSec,
-      (Timer timer) => setState(() {
-        _secondsCounter++;
-      }),
-    );
+    ApplicationState appState = Provider.of<ApplicationState>(context);
+    appState.startTimer(project: widget.project);
     _startBlink();
   }
 
   _pauseTimer() {
-    _timer.cancel();
+    ApplicationState appState = Provider.of<ApplicationState>(context);
+    appState.pauseTimer();
     _stopBlink();
   }
 
   _stopTimer() {
-    _timer.cancel();
-    Activity activity = Activity(
-      dateTimeStart: _started,
-      activityDuration: Duration(seconds: _secondsCounter),
-    );
-    widget.project.activities.add(activity);
-    Hive.box('projects').put(widget.project.id, widget.project);
+    ApplicationState appState = Provider.of<ApplicationState>(context);
     setState(() {
-      _secondsCounter = 0;
+      appState.stopTimer();
+      _stopBlink();
     });
-    _stopBlink();
   }
 
   _startBlink() {
@@ -167,17 +202,89 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   _stopBlink() {
-    _blinkTimer.cancel();
+    if (_blinkTimer != null && _blinkTimer.isActive) _blinkTimer.cancel();
     setState(() {
       _timerVisibility = true;
     });
   }
 
+  Widget _buildActivityTile(Activity activity) {
+    Duration totalTime = activity.getDuration();
+    String mins = totalTime.inMinutes.toString() + "m\n";
+    String secs = (totalTime.inSeconds % 60).toString() + "s";
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30.0),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 2.0,
+            offset: Offset(0.0, 4.0),
+          )
+        ],
+      ),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(color: Colors.black),
+                  children: [
+                    TextSpan(
+                      text: DateFormat('yyyy-MM-dd')
+                              .format(activity.getFirstStarted()) +
+                          "\n",
+                      style: TextStyle(fontSize: 16.0, height: 0.9),
+                    ),
+                    TextSpan(
+                      text: DateFormat('HH:mm')
+                          .format(activity.getFirstStarted()),
+                      style: TextStyle(fontSize: 28.0, height: 0.9),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(color: Colors.black),
+                children: [
+                  TextSpan(
+                    text: mins,
+                    style: TextStyle(fontSize: 30.0, height: 0.9),
+                  ),
+                  TextSpan(
+                    text: secs,
+                    style: TextStyle(fontSize: 16.0, height: 0.9),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTimer() {
-    if (_secondsCounter == null) return Container();
-    int hours = _secondsCounter ~/ 60 ~/ 60;
-    int minutes = (_secondsCounter ~/ 60 % 60).toInt();
-    int seconds = (_secondsCounter % 60 % 60);
+    ApplicationState appState = Provider.of<ApplicationState>(context);
+    int secondsCounter;
+    if (appState.getCurrentProject() == null ||
+        appState.getCurrentProject().id == widget.project.id)
+      secondsCounter = appState.getSecondsCounter() ?? 0;
+    else
+      secondsCounter = 0;
+    if (secondsCounter == null) return Container();
+    int hours = secondsCounter ~/ 60 ~/ 60;
+    int minutes = (secondsCounter ~/ 60 % 60).toInt();
+    int seconds = (secondsCounter % 60 % 60);
     double hoursSize = (hours != 0) ? 40.0 : 0.0;
     double minutesSize = (hours != 0) ? 20.0 : 40.0;
     double secondsSize = 20.0;
