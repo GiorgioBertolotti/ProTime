@@ -88,6 +88,7 @@ google_play: &google_play
     - gem update --system
     - gem install bundler
     - cd $TRAVIS_BUILD_DIR/pro_time/android
+    - bundler install
     - bundler update --bundler
     - bundle install --retry=3 --gemfile=$TRAVIS_BUILD_DIR/pro_time/android/Gemfile
   before_script:
