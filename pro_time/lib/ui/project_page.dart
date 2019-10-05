@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/main.dart';
@@ -23,6 +25,7 @@ class _ProjectPageState extends State<ProjectPage>
   bool _timerVisibility = true;
   bool _first = true;
   ScrollController _controller = new ScrollController();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _ProjectPageState extends State<ProjectPage>
     }
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.grey[900],
         body: ListView(
           controller: _controller,
@@ -117,6 +121,7 @@ class _ProjectPageState extends State<ProjectPage>
                           enabled: appState.getCurrentProject() == null ||
                               appState.getCurrentProject().id ==
                                   widget.project.id,
+                          scaffoldKey: _scaffoldKey,
                         ),
                       ),
                     ],
@@ -141,10 +146,22 @@ class _ProjectPageState extends State<ProjectPage>
                                   size: 30.0,
                                 ),
                                 onPressed: () {
-                                  _controller.animateTo(
-                                      MediaQuery.of(context).size.height -
-                                          MediaQuery.of(context).padding.top -
-                                          20,
+                                  double scrollTo;
+                                  if ((MediaQuery.of(context).padding.top +
+                                          (widget.project.activities.length *
+                                              100)) >
+                                      (MediaQuery.of(context).size.height -
+                                          MediaQuery.of(context).padding.top)) {
+                                    scrollTo =
+                                        (MediaQuery.of(context).size.height -
+                                            MediaQuery.of(context).padding.top);
+                                  } else {
+                                    scrollTo =
+                                        MediaQuery.of(context).padding.top +
+                                            (widget.project.activities.length *
+                                                100);
+                                  }
+                                  _controller.animateTo(scrollTo,
                                       duration:
                                           const Duration(milliseconds: 500),
                                       curve: Curves.easeOut);
@@ -208,68 +225,119 @@ class _ProjectPageState extends State<ProjectPage>
     });
   }
 
+  _deleteActivity(Activity toDelete) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text("Delete this activity?"),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.lightBlue,
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            FlatButton(
+              textColor: Colors.deepOrange,
+              child: Text("Confirm"),
+              onPressed: () {
+                setState(() {
+                  widget.project.activities.remove(toDelete);
+                  Hive.box("projects").put(widget.project.id, widget.project);
+                });
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildActivityTile(Activity activity) {
     Duration totalTime = activity.getDuration();
     String mins = totalTime.inMinutes.toString() + "m\n";
     String secs = (totalTime.inSeconds % 60).toString() + "s";
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30.0),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
-        ],
-      ),
+    return Slidable(
+      actionPane: SlidableScrollActionPane(),
+      actionExtentRatio: 0.25,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: RichText(
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30.0),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 2.0,
+              offset: Offset(0.0, 4.0),
+            )
+          ],
+        ),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(color: Colors.black),
+                    children: [
+                      TextSpan(
+                        text: DateFormat('yyyy-MM-dd')
+                                .format(activity.getFirstStarted()) +
+                            "\n",
+                        style: TextStyle(fontSize: 16.0, height: 0.9),
+                      ),
+                      TextSpan(
+                        text: DateFormat('HH:mm')
+                            .format(activity.getFirstStarted()),
+                        style: TextStyle(fontSize: 28.0, height: 0.9),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              RichText(
+                textAlign: TextAlign.center,
                 text: TextSpan(
                   style: TextStyle(color: Colors.black),
                   children: [
                     TextSpan(
-                      text: DateFormat('yyyy-MM-dd')
-                              .format(activity.getFirstStarted()) +
-                          "\n",
-                      style: TextStyle(fontSize: 16.0, height: 0.9),
+                      text: mins,
+                      style: TextStyle(fontSize: 30.0, height: 0.9),
                     ),
                     TextSpan(
-                      text: DateFormat('HH:mm')
-                          .format(activity.getFirstStarted()),
-                      style: TextStyle(fontSize: 28.0, height: 0.9),
+                      text: secs,
+                      style: TextStyle(fontSize: 16.0, height: 0.9),
                     ),
                   ],
                 ),
               ),
-            ),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: TextStyle(color: Colors.black),
-                children: [
-                  TextSpan(
-                    text: mins,
-                    style: TextStyle(fontSize: 30.0, height: 0.9),
-                  ),
-                  TextSpan(
-                    text: secs,
-                    style: TextStyle(fontSize: 16.0, height: 0.9),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+      actions: <Widget>[
+        IconSlideAction(
+          caption: 'Delete',
+          color: Colors.red,
+          icon: Icons.delete,
+          onTap: () => _deleteActivity(activity),
+        ),
+      ],
+      secondaryActions: <Widget>[
+        IconSlideAction(
+          caption: 'Delete',
+          color: Colors.red,
+          icon: Icons.delete,
+          onTap: () => _deleteActivity(activity),
+        ),
+      ],
     );
   }
 

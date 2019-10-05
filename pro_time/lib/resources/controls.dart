@@ -8,6 +8,7 @@ class TimerControls extends StatefulWidget {
     this.stopCallback,
     this.initialState = TimerState.STOPPED,
     this.enabled = true,
+    this.scaffoldKey,
   });
 
   final Function startCallback;
@@ -15,6 +16,7 @@ class TimerControls extends StatefulWidget {
   final Function pauseCallback;
   final TimerState initialState;
   final bool enabled;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   _TimerControlsState createState() => _TimerControlsState();
@@ -75,7 +77,17 @@ class _TimerControlsState extends State<TimerControls> {
         child: InkWell(
           enableFeedback: widget.enabled,
           onTap: () {
-            if (!widget.enabled) return;
+            if (!widget.enabled) {
+              if (widget.scaffoldKey != null) {
+                widget.scaffoldKey.currentState.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "You have to stop the current activity before starting another."),
+                  ),
+                );
+              }
+              return;
+            }
             setState(() {
               _state = TimerState.STARTED;
             });
@@ -116,7 +128,17 @@ class _TimerControlsState extends State<TimerControls> {
         child: InkWell(
           enableFeedback: widget.enabled,
           onTap: () {
-            if (!widget.enabled) return;
+            if (!widget.enabled) {
+              if (widget.scaffoldKey != null) {
+                widget.scaffoldKey.currentState.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "You have to stop the current activity before starting another."),
+                  ),
+                );
+              }
+              return;
+            }
             setState(() {
               _state = TimerState.STOPPED;
             });
@@ -157,7 +179,17 @@ class _TimerControlsState extends State<TimerControls> {
         child: InkWell(
           enableFeedback: widget.enabled,
           onTap: () {
-            if (!widget.enabled) return;
+            if (!widget.enabled) {
+              if (widget.scaffoldKey != null) {
+                widget.scaffoldKey.currentState.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "You have to stop the current activity before starting another."),
+                  ),
+                );
+              }
+              return;
+            }
             setState(() {
               _state = TimerState.PAUSED;
             });

@@ -1,3 +1,4 @@
+import 'package:auto_animated/auto_animated.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pro_time/main.dart';
@@ -15,6 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _first = true;
+
   Future _openBoxes() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
@@ -38,13 +41,14 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.only(
               bottom: (appState.timerState != TimerState.STOPPED) ? 50.0 : 0),
           child: FloatingActionButton(
-            onPressed: () {
-              showDialog(
+            onPressed: () async {
+              await showDialog(
                 context: context,
                 builder: (ctx) {
                   return NewProjectDialog();
                 },
               );
+              setState(() {});
             },
             backgroundColor: Colors.white,
             child: Icon(
@@ -106,16 +110,46 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 );
-                              else
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: BouncingScrollPhysics(),
-                                  itemCount: box.length,
-                                  itemBuilder: (bctx, index) {
-                                    Project project = projects[index];
-                                    return _buildProjectTile(project);
-                                  },
-                                );
+                              else {
+                                if (_first) {
+                                  _first = false;
+                                  return AutoAnimatedList(
+                                    showItemInterval:
+                                        Duration(milliseconds: 500),
+                                    showItemDuration:
+                                        Duration(milliseconds: 500),
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    itemCount: box.length,
+                                    itemBuilder: (bctx, index, animation) {
+                                      Project project = projects[index];
+                                      return FadeTransition(
+                                        opacity: Tween<double>(
+                                          begin: 0,
+                                          end: 1,
+                                        ).animate(animation),
+                                        child: SlideTransition(
+                                          position: Tween<Offset>(
+                                            begin: Offset(0, -0.1),
+                                            end: Offset.zero,
+                                          ).animate(animation),
+                                          child: _buildProjectTile(project),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    itemCount: box.length,
+                                    itemBuilder: (bctx, index) {
+                                      Project project = projects[index];
+                                      return _buildProjectTile(project);
+                                    },
+                                  );
+                                }
+                              }
                             },
                           ),
                         );
@@ -260,6 +294,23 @@ class _HomePageState extends State<HomePage> {
                   ),
               items: <PopupMenuEntry>[
                 PopupMenuItem(
+                  value: "edit",
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(
+                        Icons.edit,
+                        color: Colors.lightBlue,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        "Edit",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
                   value: "delete",
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -275,7 +326,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
               context: context,
             );
@@ -307,6 +358,14 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               );
+            } else if (coiche == "edit") {
+              await showDialog(
+                context: context,
+                builder: (ctx) {
+                  return NewProjectDialog(projectToEdit: project);
+                },
+              );
+              setState(() {});
             }
           },
           borderRadius: BorderRadius.circular(30.0),
