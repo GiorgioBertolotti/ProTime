@@ -1,0 +1,20 @@
+default_platform(:android)
+lane :release do
+  supply(
+    track: ENV["TRACK"],
+    aab: "../build/app/outputs/bundle/release/app.aab",
+    json_key_data: ENV["GOOGLE_CREDENTIALS"],
+    skip_upload_metadata: true,
+    skip_upload_images: true
+  )
+end
+lane :promote do
+  supply(
+    track: ENV["TRAVIS_PULL_REQUEST_BRANCH"],
+    track_promote_to: ENV["TRACK"],
+    aab: "../build/app/outputs/bundle/release/app.aab",
+    json_key_data: ENV['GOOGLE_CREDENTIALS'],
+    skip_upload_metadata: true,
+    skip_upload_images: true
+  )
+end

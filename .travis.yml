@@ -1,0 +1,129 @@
+os: linux
+language: generic
+dist: xenial
+addons:
+  apt:
+    packages:
+      - lib32stdc++6
+jdk: oraclejdk8
+sudo: false
+
+before_install:
+  - cd $TRAVIS_BUILD_DIR/pro_time
+
+install:
+  - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  - export PATH="$PATH:`pwd`/flutter/bin/cache/dart-sdk/bin"
+  - export PATH="$PATH:`pwd`/flutter/bin"
+  - flutter doctor -v
+  - flutter packages get
+
+static_analysis: &static_analysis
+  name: "Static analysis"
+  script: flutter analyze --no-pub --no-current-package $TRAVIS_BUILD_DIR/pro_time/lib $TRAVIS_BUILD_DIR/pro_time/test
+
+#unit_tests: &unit_tests
+#  name: "Unit tests"
+#  script: flutter test --no-pub $TRAVIS_BUILD_DIR/pro_time/test/
+
+widget_tests: &widget_tests
+  name: "Widget tests"
+  script: flutter test --no-pub $TRAVIS_BUILD_DIR/pro_time/test/widget_test.dart
+
+#integration_tests: &integration_tests
+#  name: "Integration tests"
+#  script: flutter drive --target=test_driver/main.dart
+
+build: &build_apk
+  name: "Build APK"
+  language: android
+  jdk:
+    - oraclejdk8
+  android:
+    components:
+      - tools
+      - tools
+      - platform-tools
+      - build-tools-28.0.3
+      - android-28
+      - android-27
+  before_script:
+    - echo "$PLAY_STORE_UPLOAD_KEY" | base64 --decode > $TRAVIS_BUILD_DIR/pro_time/key.jks
+    - cd $TRAVIS_BUILD_DIR/pro_time
+  script:
+    - flutter build apk --release
+  deploy:
+    - provider: releases
+      api_key: $GITHUB_TOKEN
+      file: build/app/outputs/apk/release/app-release.apk
+      skip_cleanup: true
+      name: $TRAVIS_TAG
+      on:
+        tags: true
+
+google_play: &google_play
+  name: "Google Play"
+  language: android
+  jdk:
+    - oraclejdk8
+  android:
+    components:
+      - tools
+      - tools
+      - platform-tools
+      - build-tools-28.0.3
+      - android-28
+      - android-27
+  install:
+    - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+    - export PATH="$PATH:`pwd`/flutter/bin/cache/dart-sdk/bin"
+    - export PATH="$PATH:`pwd`/flutter/bin"
+    - flutter doctor -v
+    - flutter packages get
+    - gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+    - gpg --keyserver hkp://keys.gnupg.net --recv-keys 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+    - rvm get stable --auto-dotfiles
+    - rvm install 2.3.7
+    - rvm use 2.3.7
+    - gem update --system
+    - gem install bundler
+    - cd $TRAVIS_BUILD_DIR/pro_time/android
+    - bundler update --bundler
+    - bundle install --retry=3 --gemfile=$TRAVIS_BUILD_DIR/pro_time/android/Gemfile
+  before_script:
+    - cd $TRAVIS_BUILD_DIR/pro_time
+    - echo "$PLAY_STORE_UPLOAD_KEY" | base64 --decode > $TRAVIS_BUILD_DIR/pro_time/key.jks
+    - flutter build appbundle --release
+    - cd $TRAVIS_BUILD_DIR/pro_time
+    - export TRACK=$TRAVIS_BRANCH
+    - if [[ $TRAVIS_BRANCH == "prod" ]]; then export TRACK=production; fi
+    - cd $TRAVIS_BUILD_DIR/pro_time/android
+  script:
+    - if [[ $TRAVIS_PULL_REQUEST_BRANCH == beta || $TRAVIS_PULL_REQUEST_BRANCH = alpha || $TRAVIS_PULL_REQUEST_BRANCH = internal ]]; then
+        bundle exec fastlane promote;
+      else
+        bundle exec fastlane release;
+      fi
+
+jobs:
+  include:
+  - <<: *static_analysis
+#  - <<: *unit_tests
+  - <<: *widget_tests
+#  - <<: *integration_tests
+  - stage: build
+    <<: *build_apk
+  - stage: deploy
+    <<: *google_play
+    
+stages:
+  - name: test
+    if: (NOT branch =~ /^\d*\.\d*\.\d*$/) OR (NOT branch IN (internal, alpha, beta, prod))
+  - name: build
+    if: (NOT branch =~ /^\d*\.\d*\.\d*$/) OR (NOT branch IN (internal, alpha, beta, prod))
+  - name: deploy
+    if: (type = push) AND (branch IN (internal, alpha, beta, prod))
+
+cache:
+  directories:
+  - "$HOME/.pub-cache"

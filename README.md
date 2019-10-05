@@ -1,5 +1,7 @@
 # ProTime
 
+[![Build Status](https://travis-ci.com/GiorgioBertolotti/ProTime.svg?branch=master)](https://travis-ci.com/GiorgioBertolotti/ProTime)
+
 ## Why?
 
 This app was born from the need of a simple and minimal solution to keep track of the times dedicated to personal projects.
