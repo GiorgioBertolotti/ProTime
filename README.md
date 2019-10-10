@@ -8,9 +8,10 @@ This app was born from the need of a simple and minimal solution to keep track o
 
 ## Download
 
-You can download the app from:
- - [Latest release](https://github.com/GiorgioBertolotti/ProTime/releases/latest)
- - Google play store [COMING SOON]
+<center><a href='https://play.google.com/store/apps/details?id=com.zem.protime.pro_time&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en/badges/images/generic/en_badge_web_generic.png' width='50%'/></a></center>
+
+**OR** you can download the latest *.apk* file [here](https://github.com/GiorgioBertolotti/ProTime/releases).  
+**Note:** To install the *.apk* file on your Android device, you may have to [allow app installation from "Unknown Sources"](https://www.applivery.com/docs/troubleshooting/android-unknown-sources).
 
 ## Other
 
