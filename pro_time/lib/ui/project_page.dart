@@ -179,14 +179,19 @@ class _ProjectPageState extends State<ProjectPage>
                 ],
               ),
             ),
-            Text(
-              "swipe for actions",
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF6D6D6D), height: 0.9),
-            ),
-            SizedBox(height: 5.0),
+            (widget.project.activities != null &&
+                    widget.project.activities.length > 0)
+                ? Container(
+                    margin: EdgeInsets.only(bottom: 5.0),
+                    child: Text(
+                      "swipe for actions",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF6D6D6D), height: 0.9),
+                    ),
+                  )
+                : Container(),
             ListView.builder(
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
