@@ -1,5 +1,7 @@
 import 'package:auto_animated/auto_animated.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
@@ -11,6 +13,8 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
+  final Color backgroundColor = Colors.grey[900];
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -36,7 +40,7 @@ class _HomePageState extends State<HomePage> {
     ApplicationState appState = Provider.of<ApplicationState>(context);
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: widget.backgroundColor,
         floatingActionButton: Padding(
           padding: EdgeInsets.only(
               bottom: (appState.timerState != TimerState.STOPPED) ? 50.0 : 0),
@@ -78,7 +82,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 30.0),
+                SizedBox(height: 20.0),
                 FutureBuilder(
                   future: _openBoxes(),
                   builder: (context, snapshot) {
@@ -120,9 +124,28 @@ class _HomePageState extends State<HomePage> {
                                         Duration(milliseconds: 500),
                                     shrinkWrap: true,
                                     physics: BouncingScrollPhysics(),
-                                    itemCount: box.length,
+                                    itemCount: box.length + 2,
                                     itemBuilder: (bctx, index, animation) {
-                                      Project project = projects[index];
+                                      if (index == 0) {
+                                        return Text(
+                                          "swipe for actions",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              color: Color(0xFF6D6D6D),
+                                              height: 0.9),
+                                        );
+                                      }
+                                      if (index == box.length + 1) {
+                                        return SizedBox(
+                                            height: 74.0 +
+                                                ((appState.timerState !=
+                                                        TimerState.STOPPED)
+                                                    ? 50
+                                                    : 0));
+                                      }
+                                      Project project = projects[index - 1];
                                       return FadeTransition(
                                         opacity: Tween<double>(
                                           begin: 0,
@@ -142,9 +165,28 @@ class _HomePageState extends State<HomePage> {
                                   return ListView.builder(
                                     shrinkWrap: true,
                                     physics: BouncingScrollPhysics(),
-                                    itemCount: box.length,
+                                    itemCount: box.length + 2,
                                     itemBuilder: (bctx, index) {
-                                      Project project = projects[index];
+                                      if (index == 0) {
+                                        return Text(
+                                          "swipe for actions",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              color: Color(0xFF6D6D6D),
+                                              height: 0.9),
+                                        );
+                                      }
+                                      if (index == box.length + 1) {
+                                        return SizedBox(
+                                            height: 74.0 +
+                                                ((appState.timerState !=
+                                                        TimerState.STOPPED)
+                                                    ? 50
+                                                    : 0));
+                                      }
+                                      Project project = projects[index - 1];
                                       return _buildProjectTile(project);
                                     },
                                   );
@@ -166,82 +208,7 @@ class _HomePageState extends State<HomePage> {
             Align(
               alignment: Alignment.bottomCenter,
               child: (appState.timerState != TimerState.STOPPED)
-                  ? InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ProjectPage(
-                              appState.getCurrentProject(),
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(10.0),
-                        color: appState.getCurrentProject().mainColor,
-                        height: 50.0,
-                        width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              appState.getCurrentProject().name,
-                              style: TextStyle(
-                                color: appState.getCurrentProject().textColor,
-                                fontSize: 22.0,
-                              ),
-                            ),
-                            Row(
-                              children: <Widget>[
-                                (appState.timerState == TimerState.STARTED)
-                                    ? IconButton(
-                                        icon: Icon(
-                                          Icons.pause,
-                                          color: appState
-                                              .getCurrentProject()
-                                              .textColor,
-                                          size: 20.0,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            appState.pauseTimer();
-                                          });
-                                        },
-                                      )
-                                    : IconButton(
-                                        icon: Icon(
-                                          Icons.play_arrow,
-                                          color: appState
-                                              .getCurrentProject()
-                                              .textColor,
-                                          size: 20.0,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            appState.startTimer();
-                                          });
-                                        },
-                                      ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.stop,
-                                    color:
-                                        appState.getCurrentProject().textColor,
-                                    size: 20.0,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      appState.stopTimer();
-                                    });
-                                  },
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        //child: ,
-                      ),
-                    )
+                  ? _buildBottomControls(appState)
                   : Container(),
             ),
           ],
@@ -250,21 +217,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  var _tapPosition;
-
-  void _storePosition(TapDownDetails details) {
-    _tapPosition = details.globalPosition;
-  }
-
-  Widget _buildProjectTile(Project project) {
-    Duration totalTime = project.getTotalTime();
-    String hrs = totalTime.inHours.toString() + "H\n";
-    String mins = (totalTime.inMinutes % 60).toString() + "m";
+  Widget _buildBottomControls(ApplicationState appState) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+      height: 40.0,
+      width: double.infinity,
+      margin: EdgeInsets.all(10.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30.0),
-        color: project.mainColor,
+        borderRadius: BorderRadius.circular(15.0),
+        color: appState.getCurrentProject().mainColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -276,136 +236,245 @@ class _HomePageState extends State<HomePage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTapDown: _storePosition,
+          borderRadius: BorderRadius.circular(15.0),
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ProjectPage(project),
+                builder: (context) => ProjectPage(
+                  appState.getCurrentProject(),
+                ),
               ),
             );
           },
-          onLongPress: () async {
-            final RenderBox overlay =
-                Overlay.of(context).context.findRenderObject();
-            var coiche = await showMenu(
-              position: RelativeRect.fromRect(
-                  _tapPosition & Size(40, 40), // smaller rect, the touch area
-                  Offset.zero & overlay.size // Bigger rect, the entire screen
-                  ),
-              items: <PopupMenuEntry>[
-                PopupMenuItem(
-                  value: "edit",
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.edit,
-                        color: Colors.lightBlue,
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        "Edit",
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: "delete",
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(
-                        Icons.delete,
-                        color: Colors.deepOrange,
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        "Delete",
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              context: context,
-            );
-            if (coiche == "delete") {
-              showDialog(
-                context: context,
-                builder: (ctx) {
-                  return AlertDialog(
-                    title: Text("Delete " + project.name + "?"),
-                    actions: <Widget>[
-                      FlatButton(
-                        textColor: Colors.lightBlue,
-                        child: Text("Cancel"),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                      ),
-                      FlatButton(
-                        textColor: Colors.deepOrange,
-                        child: Text("Confirm"),
-                        onPressed: () {
-                          setState(() {
-                            Hive.box('projects').delete(project.id);
-                          });
-                          Navigator.of(ctx).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            } else if (coiche == "edit") {
-              await showDialog(
-                context: context,
-                builder: (ctx) {
-                  return NewProjectDialog(projectToEdit: project);
-                },
-              );
-              setState(() {});
-            }
-          },
-          borderRadius: BorderRadius.circular(30.0),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    project.name,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(20.0, 5.0, 10.0, 5.0),
+                  child: AutoSizeText(
+                    appState.getCurrentProject().name,
                     style: TextStyle(
-                      color: project.textColor,
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.w900,
+                      color: appState.getCurrentProject().textColor,
+                      fontSize: 22.0,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    minFontSize: 16.0,
+                    maxFontSize: 24.0,
                   ),
                 ),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(color: project.textColor),
-                    children: [
-                      TextSpan(
-                          text: hrs,
-                          style: TextStyle(fontSize: 30.0, height: 0.9)),
-                      TextSpan(
-                          text: mins,
-                          style: TextStyle(fontSize: 16.0, height: 0.9)),
-                    ],
+              ),
+              Row(
+                children: <Widget>[
+                  (appState.timerState == TimerState.STARTED)
+                      ? GestureDetector(
+                          child: Container(
+                            color: Colors.transparent,
+                            width: 40.0,
+                            height: 40.0,
+                            child: Center(
+                              child: Image.asset(
+                                "assets/pause.png",
+                                color: appState.getCurrentProject().textColor,
+                                width: 16.0,
+                                height: 16.0,
+                              ),
+                            ),
+                          ),
+                          onTap: () => setState(() {
+                            appState.pauseTimer();
+                          }),
+                        )
+                      : GestureDetector(
+                          child: Container(
+                            color: Colors.transparent,
+                            width: 40.0,
+                            height: 40.0,
+                            child: Center(
+                              child: Image.asset(
+                                "assets/play.png",
+                                color: appState.getCurrentProject().textColor,
+                                width: 16.0,
+                                height: 16.0,
+                              ),
+                            ),
+                          ),
+                          onTap: () => setState(() {
+                            appState.startTimer();
+                          }),
+                        ),
+                  GestureDetector(
+                    child: Container(
+                      color: Colors.transparent,
+                      width: 40.0,
+                      height: 40.0,
+                      child: Center(
+                        child: Image.asset(
+                          "assets/stop.png",
+                          color: appState.getCurrentProject().textColor,
+                          width: 16.0,
+                          height: 16.0,
+                        ),
+                      ),
+                    ),
+                    onTap: () => setState(() {
+                      appState.stopTimer();
+                    }),
                   ),
-                ),
-              ],
-            ),
+                  SizedBox(width: 10.0),
+                ],
+              )
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildProjectTile(Project project) {
+    Duration totalTime = project.getTotalTime();
+    String hrs = totalTime.inHours.toString() + "H\n";
+    String mins = (totalTime.inMinutes % 60).toString() + "m";
+    return Slidable(
+      actionPane: SlidableScrollActionPane(),
+      actionExtentRatio: 0.25,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30.0),
+          color: project.mainColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 2.0,
+              offset: Offset(0.0, 4.0),
+            )
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ProjectPage(project),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(30.0),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: AutoSizeText(
+                      project.name,
+                      style: TextStyle(
+                        color: project.textColor,
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 20.0,
+                      maxFontSize: 34.0,
+                    ),
+                  ),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: TextStyle(color: project.textColor),
+                      children: [
+                        TextSpan(
+                            text: hrs,
+                            style: TextStyle(fontSize: 30.0, height: 0.9)),
+                        TextSpan(
+                            text: mins,
+                            style: TextStyle(fontSize: 16.0, height: 0.9)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        IconSlideAction(
+          caption: 'Edit',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.blue,
+          icon: Icons.edit,
+          onTap: () => _editProject(project),
+        ),
+        IconSlideAction(
+          caption: 'Delete',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.red,
+          icon: Icons.delete,
+          onTap: () => _deleteProject(project),
+        ),
+      ],
+      secondaryActions: <Widget>[
+        IconSlideAction(
+          caption: 'Delete',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.red,
+          icon: Icons.delete,
+          onTap: () => _deleteProject(project),
+        ),
+        IconSlideAction(
+          caption: 'Edit',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.blue,
+          icon: Icons.edit,
+          onTap: () => _editProject(project),
+        ),
+      ],
+    );
+  }
+
+  _deleteProject(Project project) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text("Delete " + project.name + "?"),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.lightBlue,
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            FlatButton(
+              textColor: Colors.deepOrange,
+              child: Text("Confirm"),
+              onPressed: () {
+                setState(() {
+                  Hive.box('projects').delete(project.id);
+                });
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _editProject(Project project) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return NewProjectDialog(projectToEdit: project);
+      },
+    );
+    setState(() {});
   }
 }

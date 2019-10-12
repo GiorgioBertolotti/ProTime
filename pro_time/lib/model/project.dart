@@ -41,6 +41,14 @@ class Project {
 class Activity {
   List<SubActivity> subActivities = List();
 
+  setDuration(Duration newDuration) {
+    DateTime started = getFirstStarted();
+    subActivities.clear();
+    subActivities.add(
+      SubActivity(dateTimeStart: started, activityDuration: newDuration),
+    );
+  }
+
   Duration getDuration() {
     if (subActivities == null || subActivities.length == 0)
       return Duration(seconds: 0);

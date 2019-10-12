@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +15,7 @@ class ProjectPage extends StatefulWidget {
   ProjectPage(this.project);
 
   final Project project;
+  final Color backgroundColor = Colors.grey[900];
 
   @override
   _ProjectPageState createState() => _ProjectPageState();
@@ -50,7 +53,7 @@ class _ProjectPageState extends State<ProjectPage>
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.grey[900],
+        backgroundColor: widget.backgroundColor,
         body: ListView(
           controller: _controller,
           physics: BouncingScrollPhysics(),
@@ -71,7 +74,7 @@ class _ProjectPageState extends State<ProjectPage>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Expanded(
-                              child: Text(
+                              child: AutoSizeText(
                                 widget.project.name,
                                 style: TextStyle(
                                   fontSize: 40.0,
@@ -80,6 +83,8 @@ class _ProjectPageState extends State<ProjectPage>
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                minFontSize: 24.0,
+                                maxFontSize: 44.0,
                               ),
                             ),
                             IconButton(
@@ -174,6 +179,14 @@ class _ProjectPageState extends State<ProjectPage>
                 ],
               ),
             ),
+            Text(
+              "swipe for actions",
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF6D6D6D), height: 0.9),
+            ),
+            SizedBox(height: 5.0),
             ListView.builder(
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
@@ -225,41 +238,70 @@ class _ProjectPageState extends State<ProjectPage>
     });
   }
 
-  _deleteActivity(Activity toDelete) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text("Delete this activity?"),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Colors.lightBlue,
-              child: Text("Cancel"),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-            ),
-            FlatButton(
-              textColor: Colors.deepOrange,
-              child: Text("Confirm"),
-              onPressed: () {
-                setState(() {
-                  widget.project.activities.remove(toDelete);
-                  Hive.box("projects").put(widget.project.id, widget.project);
-                });
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
-        );
+  _editActivity(Activity toEdit) {
+    Picker picker = Picker(
+      adapter: NumberPickerAdapter(data: [
+        NumberPickerColumn(
+          initValue: toEdit.getDuration().inHours,
+          begin: 0,
+          end: 999,
+          suffix: Text(
+            "h",
+            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+          ),
+        ),
+        NumberPickerColumn(
+          initValue: toEdit.getDuration().inMinutes % 60,
+          begin: 0,
+          end: 60,
+          suffix: Text(
+            "m",
+            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+          ),
+        ),
+        NumberPickerColumn(
+          initValue: toEdit.getDuration().inSeconds % 60,
+          begin: 0,
+          end: 60,
+          suffix: Text(
+            "s",
+            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+          ),
+        ),
+      ]),
+      title: Text("Duration"),
+      textAlign: TextAlign.left,
+      textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
+      selectedTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
+      columnPadding: const EdgeInsets.all(8.0),
+      onConfirm: (Picker picker, List value) {
+        print(value);
+        setState(() {
+          toEdit.setDuration(
+              Duration(hours: value[0], minutes: value[1], seconds: value[2]));
+          Hive.box("projects").put(widget.project.id, widget.project);
+        });
       },
     );
+    picker.showModal(context);
+  }
+
+  _deleteActivity(Activity toDelete) {
+    setState(() {
+      widget.project.activities.remove(toDelete);
+      Hive.box("projects").put(widget.project.id, widget.project);
+    });
   }
 
   Widget _buildActivityTile(Activity activity) {
     Duration totalTime = activity.getDuration();
-    String mins = totalTime.inMinutes.toString() + "m\n";
-    String secs = (totalTime.inSeconds % 60).toString() + "s";
+    int secondsCounter = totalTime.inSeconds;
+    int hours = secondsCounter ~/ 60 ~/ 60;
+    int minutes = (secondsCounter ~/ 60 % 60).toInt();
+    int seconds = (secondsCounter % 60 % 60);
+    double hoursSize = (hours != 0) ? 30.0 : 0.0;
+    double minutesSize = (hours != 0) ? 16.0 : 30.0;
+    double secondsSize = 16.0;
     return Slidable(
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
@@ -284,6 +326,8 @@ class _ProjectPageState extends State<ProjectPage>
             children: <Widget>[
               Expanded(
                 child: RichText(
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   text: TextSpan(
                     style: TextStyle(color: Colors.black),
                     children: [
@@ -303,18 +347,40 @@ class _ProjectPageState extends State<ProjectPage>
                 ),
               ),
               RichText(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: TextStyle(color: Colors.black),
                   children: [
+                    hours != 0
+                        ? TextSpan(
+                            text: hours.toString() + "H\n",
+                            style: TextStyle(
+                              fontSize: hoursSize,
+                              height: 0.9,
+                            ),
+                          )
+                        : TextSpan(),
                     TextSpan(
-                      text: mins,
-                      style: TextStyle(fontSize: 30.0, height: 0.9),
+                      text: minutes.toString() + "m" + (hours != 0 ? "" : "\n"),
+                      style: TextStyle(
+                        fontSize: minutesSize,
+                        height: 0.9,
+                      ),
                     ),
-                    TextSpan(
-                      text: secs,
-                      style: TextStyle(fontSize: 16.0, height: 0.9),
-                    ),
+                    hours == 0
+                        ? TextSpan(
+                            text: (seconds < 10
+                                    ? ("0" + seconds.toString())
+                                    : seconds.toString()) +
+                                "s",
+                            style: TextStyle(
+                              fontSize: secondsSize,
+                              height: 0.9,
+                            ),
+                          )
+                        : TextSpan(),
                   ],
                 ),
               ),
@@ -324,8 +390,16 @@ class _ProjectPageState extends State<ProjectPage>
       ),
       actions: <Widget>[
         IconSlideAction(
+          caption: 'Edit',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.blue,
+          icon: Icons.edit,
+          onTap: () => _editActivity(activity),
+        ),
+        IconSlideAction(
           caption: 'Delete',
-          color: Colors.red,
+          color: widget.backgroundColor,
+          foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteActivity(activity),
         ),
@@ -333,9 +407,17 @@ class _ProjectPageState extends State<ProjectPage>
       secondaryActions: <Widget>[
         IconSlideAction(
           caption: 'Delete',
-          color: Colors.red,
+          color: widget.backgroundColor,
+          foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteActivity(activity),
+        ),
+        IconSlideAction(
+          caption: 'Edit',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.blue,
+          icon: Icons.edit,
+          onTap: () => _editActivity(activity),
         ),
       ],
     );

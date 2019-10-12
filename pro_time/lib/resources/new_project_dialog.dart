@@ -65,12 +65,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                   _openMainColorPicker();
                 },
               ),
-              Container(
-                width: 35.0,
-                height: 35.0,
-                child: CircleAvatar(
-                  backgroundColor: _selectedMainColor,
-                  radius: 35.0,
+              InkWell(
+                onTap: () {
+                  _openMainColorPicker();
+                },
+                child: Container(
+                  width: 35.0,
+                  height: 35.0,
+                  child: CircleAvatar(
+                    backgroundColor: _selectedMainColor,
+                    radius: 35.0,
+                  ),
                 ),
               ),
             ],
@@ -85,12 +90,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                   _openTextColorPicker();
                 },
               ),
-              Container(
-                width: 35.0,
-                height: 35.0,
-                child: CircleAvatar(
-                  backgroundColor: _selectedTextColor,
-                  radius: 35.0,
+              InkWell(
+                onTap: () {
+                  _openTextColorPicker();
+                },
+                child: Container(
+                  width: 35.0,
+                  height: 35.0,
+                  child: CircleAvatar(
+                    backgroundColor: _selectedTextColor,
+                    radius: 35.0,
+                  ),
                 ),
               ),
             ],
