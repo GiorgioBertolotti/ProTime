@@ -1,0 +1,79 @@
+---
+---
+
+@import "{{ site.theme }}";
+$accent-color: #ffd902;
+$base-color: #181818;
+$base-color-hover: darken($base-color, 10%);
+$white: #fff;
+
+// Define background colors
+$background: $white;
+$background-alt: #f2f2f5;
+
+// Define border colors
+$border: #dcd9d9;
+
+// Define text colors
+//$heading: #374054;
+$heading: darken($accent-color, 10%);
+$text: #74808a;
+$use-filters: false;
+
+body {
+  font: 16px "Lato", sans-serif;
+}
+
+h1 {
+  a {
+    color: darken($accent-color, 10%);
+  }
+  a:hover {
+    color: lighten($accent-color, 10%);
+  }
+  a:active,
+  a:focus {
+    color: darken($accent-color, 20%);
+  }
+}
+
+header {
+  p {
+    a {
+      color: darken($accent-color, 10%);
+    }
+    a:hover {
+      color: lighten($accent-color, 10%);
+    }
+    a:active,
+    a:focus {
+      color: darken($accent-color, 20%);
+    }
+  }
+}
+
+footer {
+  p {
+    a {
+      color: darken($accent-color, 10%);
+    }
+    a:hover {
+      color: lighten($accent-color, 10%);
+    }
+    a:active,
+    a:focus {
+      color: darken($accent-color, 20%);
+    }
+  }
+}
+
+.downloads {
+  li {
+    width: 100%;
+  }
+}
+
+.em {
+  width: 1em !important;
+  height: 1em !important;
+}
