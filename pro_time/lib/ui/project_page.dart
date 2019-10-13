@@ -30,7 +30,7 @@ class _ProjectPageState extends State<ProjectPage>
   Duration _halfSec = const Duration(milliseconds: 0500);
   bool _timerVisibility = true;
   bool _first = true;
-  ScrollController _controller = new ScrollController();
+  ScrollController _controller = ScrollController();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   StreamController<BarTouchResponse> barTouchedResultStreamController;
   int touchedIndex;
@@ -185,6 +185,7 @@ class _ProjectPageState extends State<ProjectPage>
                                 onPressed: () {
                                   double scrollTo;
                                   if ((MediaQuery.of(context).padding.top +
+                                          230.0 +
                                           (_project.activities.length * 100)) >
                                       (MediaQuery.of(context).size.height -
                                           MediaQuery.of(context).padding.top)) {
@@ -194,6 +195,7 @@ class _ProjectPageState extends State<ProjectPage>
                                   } else {
                                     scrollTo =
                                         MediaQuery.of(context).padding.top +
+                                            230.0 +
                                             (_project.activities.length * 100);
                                   }
                                   _controller.animateTo(scrollTo,
@@ -349,6 +351,7 @@ class _ProjectPageState extends State<ProjectPage>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 40.0),
       margin: EdgeInsets.only(bottom: 30.0),
+      height: 200.0,
       child: FlChart(
         chart: BarChart(
           mainBarData(),
@@ -391,7 +394,8 @@ class _ProjectPageState extends State<ProjectPage>
                 return TooltipItem(
                   weekDay +
                       '\n' +
-                      roundDecimal(touchedSpot.spot.y - 1, 1).toString(),
+                      roundDecimal(touchedSpot.spot.y - 1, 1).toString() +
+                      "H",
                   TextStyle(color: _project.textColor),
                 );
               }).toList();
@@ -452,7 +456,6 @@ class _ProjectPageState extends State<ProjectPage>
           case 5:
             return makeGroupData(5, value, isTouched: i == touchedIndex);
           case 6:
-            print(value);
             return makeGroupData(6, value, isTouched: i == touchedIndex);
           default:
             return null;
