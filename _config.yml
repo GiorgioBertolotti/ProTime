@@ -1,0 +1,5 @@
+theme: jekyll-theme-minimal
+title: ProTime
+show_downloads: true
+plugins:
+  - jekyll-sitemap

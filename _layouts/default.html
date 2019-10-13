@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	{% seo %}
+	<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+	<!--[if lt IE 9]>
+					      <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+								<![endif]-->
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-138940263-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+
+		gtag('config', 'UA-138940263-1');
+	</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<header>
+			<h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
+
+			{% if site.logo %}
+			<img src="{{site.logo | relative_url}}" alt="Logo" />
+			{% endif %}
+
+			<p>{{ site.description | default: site.github.project_tagline }}</p>
+
+			{% if site.github.is_project_page %}
+			<p class="view"><a href="{{ site.github.repository_url }}">View the Project on GitHub
+					<small>{{ site.github.repository_nwo }}</small></a></p>
+			{% endif %}
+
+			{% if site.show_downloads %}
+			<ul class="downloads">
+				<li><a href="https://github.com/GiorgioBertolotti/ProTime/releases/latest">Download <strong>APK
+							File</strong></a>
+				</li>
+			</ul>
+			<a
+				href='https://play.google.com/store/apps/details?id=com.zem.protime.pro_time&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>
+				<img alt='Get it on Google Play'
+					src='https://play.google.com/intl/en/badges/images/generic/en_badge_web_generic.png' />
+			</a>
+			<center>
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+					<input type="hidden" name="cmd" value="_s-xclick" />
+					<input type="hidden" name="hosted_button_id" value="YRP3RXQJZ4M7S" />
+					<input type="image" src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif" border="0"
+						name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+					<img alt="" border="0" src="https://www.paypal.com/en_IT/i/scr/pixel.gif" width="1" height="1" />
+				</form>
+			</center>
+			{% endif %}
+		</header>
+		<section>
+			<h2>The problem</h2>
+			<p>The problem was simple: I needed an application to monitor the time I invest in my personal projects and I
+				wanted to do
+				it myself.</p>
+			<h2>The solution</h2>
+			<p>The solution is ProTime, a minimal and easy to use application: play, pause and stop.<br />
+				The interface is user friendly and attractive, I'm already working on some improvements and features that I felt
+				the
+				need while using the app.<br />
+				Among these:
+				<ul>
+					<li>Pomodoro mode (starts a countdown activity)</li>
+					<li>Notification with controls</li>
+					<li>Graphs with statistics of time invested in projects</li>
+				</ul>
+			</p>
+			<h2>Getting started</h2>
+			<h3>Add first project</h3>
+			<table>
+				<tr>
+					<th>Open the app</th>
+					<th>Press on<br />add button</th>
+					<th>Compile and<br />press "Add"</th>
+				</tr>
+				<tr>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/1.jpg"
+							alt="Home"></td>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/2.jpg"
+							alt="Add project"></td>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/3.jpg"
+							alt="Project added"></td>
+				</tr>
+			</table>
+			<h3>Monitor project</h3>
+			<table>
+				<tr>
+					<th>Open the<br />project page</th>
+					<th>Press on<br />start button</th>
+					<th>Press stop<br />when you're done</th>
+				</tr>
+				<tr>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/4.jpg"
+							alt="Project page"></td>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/5.jpg"
+							alt="Start timer"></td>
+					<td><img src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/gh-pages/screenshots/6.jpg"
+							alt="Stop timer"></td>
+				</tr>
+			</table>
+		</section>
+		<footer>
+			{% if site.github.is_project_page %}
+			<p>This project is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</p>
+			{% endif %}
+
+			<p class="view"><a href="https://bertolotti.dev/">Visit my WebSite!</a></p>
+		</footer>
+	</div>
+	<script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+</body>
+
+</html>
