@@ -36,10 +36,38 @@ class Project {
     seconds = (seconds ~/ activities.length);
     return Duration(seconds: seconds);
   }
+
+  bool hasIncompleteActivities() {
+    if (activities == null || activities.length == 0) return false;
+    for (Activity activity in this.activities) {
+      if (activity.getIncompleteSubActivity() != null) return true;
+    }
+    return false;
+  }
+
+  Activity getIncompleteActivity() {
+    if (activities == null || activities.length == 0) return null;
+    for (Activity activity in this.activities) {
+      if (activity.getIncompleteSubActivity() != null) return activity;
+    }
+    return null;
+  }
+
+  bool operator ==(o) => o is Project && o.id == this.id;
+  int get hashCode => id.hashCode;
 }
 
 class Activity {
   List<SubActivity> subActivities = List();
+
+  SubActivity getIncompleteSubActivity() {
+    for (SubActivity subActivity in subActivities) {
+      if (subActivity.activityDuration == null) {
+        return subActivity;
+      }
+    }
+    return null;
+  }
 
   setDuration(Duration newDuration) {
     DateTime started = getFirstStarted();
@@ -54,7 +82,8 @@ class Activity {
       return Duration(seconds: 0);
     int seconds = 0;
     for (SubActivity subActivity in subActivities) {
-      seconds += subActivity.getDuration().inSeconds;
+      if (subActivity.getDuration() != null)
+        seconds += subActivity.getDuration().inSeconds;
     }
     return Duration(seconds: seconds);
   }
@@ -69,6 +98,10 @@ class Activity {
     }
     return first;
   }
+
+  bool operator ==(o) =>
+      o is Activity && o.getFirstStarted() == this.getFirstStarted();
+  int get hashCode => this.getFirstStarted().hashCode;
 }
 
 class SubActivity {
@@ -80,4 +113,8 @@ class SubActivity {
   Duration getDuration() {
     return activityDuration;
   }
+
+  bool operator ==(o) =>
+      o is SubActivity && o.dateTimeStart == this.dateTimeStart;
+  int get hashCode => this.dateTimeStart.hashCode;
 }

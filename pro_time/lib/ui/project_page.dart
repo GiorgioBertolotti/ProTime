@@ -209,7 +209,10 @@ class _ProjectPageState extends State<ProjectPage>
 
   _startTimer() {
     ApplicationState appState = Provider.of<ApplicationState>(context);
-    appState.startTimer(project: widget.project);
+    if (appState.getCurrentProject() == null ||
+        appState.getCurrentProject() != widget.project)
+      appState.setCurrentProject(widget.project);
+    appState.startTimer();
     _startBlink();
   }
 

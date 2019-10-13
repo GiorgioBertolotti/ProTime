@@ -39,180 +39,184 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     ApplicationState appState = Provider.of<ApplicationState>(context);
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: widget.backgroundColor,
-        floatingActionButton: Padding(
-          padding: EdgeInsets.only(
-              bottom: (appState.timerState != TimerState.STOPPED) ? 50.0 : 0),
-          child: FloatingActionButton(
-            onPressed: () async {
-              await showDialog(
-                context: context,
-                builder: (ctx) {
-                  return NewProjectDialog();
-                },
-              );
-              setState(() {});
-            },
-            backgroundColor: Colors.white,
-            child: Icon(
-              Icons.add,
-              size: 38.0,
-              color: Colors.black,
-            ),
-          ),
-        ),
-        body: Stack(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                SizedBox(height: 20.0),
-                Container(
-                  padding: EdgeInsets.only(left: 20.0),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        "ProTime",
-                        style: TextStyle(
-                          fontSize: 60.0,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+      child: FutureBuilder(
+        future: _openBoxes(),
+        builder: (context, snapshot) {
+          List<Widget> stackChildren = [];
+          List<Widget> columnChildren = [
+            SizedBox(height: 20.0),
+            Container(
+              padding: EdgeInsets.only(left: 20.0),
+              child: Row(
+                children: <Widget>[
+                  Text(
+                    "ProTime",
+                    style: TextStyle(
+                      fontSize: 60.0,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                SizedBox(height: 20.0),
-                FutureBuilder(
-                  future: _openBoxes(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      if (snapshot.error != null) {
-                        return Container();
-                      } else {
-                        return Expanded(
-                          child: WatchBoxBuilder(
-                            box: Hive.box('projects'),
-                            builder: (ctx, box) {
-                              var projects =
-                                  box.values.toList().cast<Project>();
-                              if (projects.length == 0)
-                                return Center(
-                                  child: FlatButton(
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (ctx) {
-                                          return NewProjectDialog();
-                                        },
-                                      );
-                                    },
-                                    child: Text(
-                                      "Add a project",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 30.0),
-                                    ),
-                                  ),
-                                );
-                              else {
-                                if (_first) {
-                                  _first = false;
-                                  return AutoAnimatedList(
-                                    showItemInterval:
-                                        Duration(milliseconds: 500),
-                                    showItemDuration:
-                                        Duration(milliseconds: 500),
-                                    shrinkWrap: true,
-                                    physics: BouncingScrollPhysics(),
-                                    itemCount: box.length + 2,
-                                    itemBuilder: (bctx, index, animation) {
-                                      if (index == 0) {
-                                        return Text(
-                                          "swipe for actions",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: Color(0xFF6D6D6D),
-                                              height: 0.9),
-                                        );
-                                      }
-                                      if (index == box.length + 1) {
-                                        return SizedBox(
-                                            height: 74.0 +
-                                                ((appState.timerState !=
-                                                        TimerState.STOPPED)
-                                                    ? 50
-                                                    : 0));
-                                      }
-                                      Project project = projects[index - 1];
-                                      return FadeTransition(
-                                        opacity: Tween<double>(
-                                          begin: 0,
-                                          end: 1,
-                                        ).animate(animation),
-                                        child: SlideTransition(
-                                          position: Tween<Offset>(
-                                            begin: Offset(0, -0.1),
-                                            end: Offset.zero,
-                                          ).animate(animation),
-                                          child: _buildProjectTile(project),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: BouncingScrollPhysics(),
-                                    itemCount: box.length + 2,
-                                    itemBuilder: (bctx, index) {
-                                      if (index == 0) {
-                                        return Text(
-                                          "swipe for actions",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: Color(0xFF6D6D6D),
-                                              height: 0.9),
-                                        );
-                                      }
-                                      if (index == box.length + 1) {
-                                        return SizedBox(
-                                            height: 74.0 +
-                                                ((appState.timerState !=
-                                                        TimerState.STOPPED)
-                                                    ? 50
-                                                    : 0));
-                                      }
-                                      Project project = projects[index - 1];
-                                      return _buildProjectTile(project);
-                                    },
-                                  );
-                                }
-                              }
-                            },
+                ],
+              ),
+            ),
+            SizedBox(height: 20.0),
+          ];
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.error != null) {
+              stackChildren.add(Column(children: columnChildren));
+              stackChildren.add(Container());
+            } else {
+              columnChildren.add(Expanded(
+                child: WatchBoxBuilder(
+                  box: Hive.box('projects'),
+                  builder: (ctx, box) {
+                    List<Project> projects =
+                        box.values.toList().cast<Project>();
+                    if (projects.length == 0)
+                      return Center(
+                        child: FlatButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) {
+                                return NewProjectDialog();
+                              },
+                            );
+                          },
+                          child: Text(
+                            "Add a project",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 30.0),
                           ),
+                        ),
+                      );
+                    else {
+                      if (_first) {
+                        _first = false;
+                        return AutoAnimatedList(
+                          showItemInterval: Duration(milliseconds: 300),
+                          showItemDuration: Duration(milliseconds: 400),
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          itemCount: box.length + 2,
+                          itemBuilder: (bctx, index, animation) {
+                            if (index == 0) {
+                              return Text(
+                                "swipe for actions",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Color(0xFF6D6D6D), height: 0.9),
+                              );
+                            }
+                            if (index == box.length + 1) {
+                              return SizedBox(
+                                  height: 74.0 +
+                                      ((appState.timerState !=
+                                              TimerState.STOPPED)
+                                          ? 50
+                                          : 0));
+                            }
+                            Project project = projects[index - 1];
+                            return FadeTransition(
+                              opacity: Tween<double>(
+                                begin: 0,
+                                end: 1,
+                              ).animate(animation),
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: Offset(0, -0.1),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: _buildProjectTile(project),
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          itemCount: box.length + 2,
+                          itemBuilder: (bctx, index) {
+                            if (index == 0) {
+                              return Text(
+                                "swipe for actions",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Color(0xFF6D6D6D), height: 0.9),
+                              );
+                            }
+                            if (index == box.length + 1) {
+                              return SizedBox(
+                                  height: 74.0 +
+                                      ((appState.timerState !=
+                                              TimerState.STOPPED)
+                                          ? 50
+                                          : 0));
+                            }
+                            Project project = projects[index - 1];
+                            return _buildProjectTile(project);
+                          },
                         );
                       }
-                    } else {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
                     }
                   },
                 ),
-              ],
+              ));
+              stackChildren.add(Column(children: columnChildren));
+              List<Project> projects =
+                  Hive.box('projects').values.toList().cast<Project>();
+              for (Project project in projects)
+                if (project.hasIncompleteActivities()) {
+                  appState.setCurrentProject(project);
+                }
+              stackChildren.add(Align(
+                alignment: Alignment.bottomCenter,
+                child: (appState.timerState != TimerState.STOPPED)
+                    ? _buildBottomControls(appState)
+                    : Container(),
+              ));
+            }
+          } else {
+            columnChildren.add(Center(
+              child: CircularProgressIndicator(),
+            ));
+            stackChildren.add(Column(children: columnChildren));
+          }
+          return Scaffold(
+            backgroundColor: widget.backgroundColor,
+            floatingActionButton: Padding(
+              padding: EdgeInsets.only(
+                  bottom:
+                      (appState.timerState != TimerState.STOPPED) ? 50.0 : 0),
+              child: FloatingActionButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (ctx) {
+                      return NewProjectDialog();
+                    },
+                  );
+                  setState(() {});
+                },
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.add,
+                  size: 38.0,
+                  color: Colors.black,
+                ),
+              ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: (appState.timerState != TimerState.STOPPED)
-                  ? _buildBottomControls(appState)
-                  : Container(),
+            body: Stack(
+              children: stackChildren,
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -240,9 +244,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ProjectPage(
-                  appState.getCurrentProject(),
-                ),
+                builder: (context) => ProjectPage(appState.getCurrentProject()),
               ),
             );
           },
@@ -356,6 +358,9 @@ class _HomePageState extends State<HomePage> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
+              ApplicationState appState =
+                  Provider.of<ApplicationState>(context);
+              appState.setCurrentProject(project);
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => ProjectPage(project),
