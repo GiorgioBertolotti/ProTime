@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive/hive.dart';
@@ -12,9 +14,9 @@ import 'package:pro_time/resources/controls.dart';
 import 'package:provider/provider.dart';
 
 class ProjectPage extends StatefulWidget {
-  ProjectPage(this.project);
+  ProjectPage(this.projectId);
 
-  final Project project;
+  final String projectId;
   final Color backgroundColor = Colors.grey[900];
 
   @override
@@ -23,22 +25,53 @@ class ProjectPage extends StatefulWidget {
 
 class _ProjectPageState extends State<ProjectPage>
     with TickerProviderStateMixin {
+  Project _project;
   Timer _blinkTimer;
   Duration _halfSec = const Duration(milliseconds: 0500);
   bool _timerVisibility = true;
   bool _first = true;
   ScrollController _controller = new ScrollController();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  StreamController<BarTouchResponse> barTouchedResultStreamController;
+  int touchedIndex;
 
   @override
   void initState() {
+    _updateProject();
+    barTouchedResultStreamController = StreamController();
+    barTouchedResultStreamController.stream
+        .distinct()
+        .listen((BarTouchResponse response) {
+      if (response == null) {
+        return;
+      }
+      if (response.spot == null) {
+        setState(() {
+          touchedIndex = -1;
+        });
+        return;
+      }
+      setState(() {
+        if (response.touchInput is FlLongPressEnd) {
+          touchedIndex = -1;
+        } else {
+          touchedIndex = response.spot.touchedBarGroupPosition;
+        }
+      });
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
     if (_blinkTimer != null) _blinkTimer.cancel();
+    barTouchedResultStreamController.close();
     super.dispose();
+  }
+
+  _updateProject() {
+    _project = Hive.box("projects").get(widget.projectId);
   }
 
   @override
@@ -47,7 +80,7 @@ class _ProjectPageState extends State<ProjectPage>
     if (_first) {
       _first = false;
       if ((appState.getCurrentProject() == null ||
-              appState.getCurrentProject().id == widget.project.id) &&
+              appState.getCurrentProject().id == _project.id) &&
           appState.timerState == TimerState.STARTED) _startBlink();
     }
     return SafeArea(
@@ -75,10 +108,10 @@ class _ProjectPageState extends State<ProjectPage>
                           children: <Widget>[
                             Expanded(
                               child: AutoSizeText(
-                                widget.project.name,
+                                _project.name,
                                 style: TextStyle(
                                   fontSize: 40.0,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
                                 maxLines: 1,
@@ -124,15 +157,14 @@ class _ProjectPageState extends State<ProjectPage>
                           stopCallback: _stopTimer,
                           initialState: appState.timerState,
                           enabled: appState.getCurrentProject() == null ||
-                              appState.getCurrentProject().id ==
-                                  widget.project.id,
+                              appState.getCurrentProject().id == _project.id,
                           scaffoldKey: _scaffoldKey,
                         ),
                       ),
                     ],
                   ),
-                  (widget.project.activities != null &&
-                          widget.project.activities.length > 0)
+                  (_project.activities != null &&
+                          _project.activities.length > 0)
                       ? Positioned(
                           bottom: 20.0,
                           left: 0.0,
@@ -153,8 +185,7 @@ class _ProjectPageState extends State<ProjectPage>
                                 onPressed: () {
                                   double scrollTo;
                                   if ((MediaQuery.of(context).padding.top +
-                                          (widget.project.activities.length *
-                                              100)) >
+                                          (_project.activities.length * 100)) >
                                       (MediaQuery.of(context).size.height -
                                           MediaQuery.of(context).padding.top)) {
                                     scrollTo =
@@ -163,8 +194,7 @@ class _ProjectPageState extends State<ProjectPage>
                                   } else {
                                     scrollTo =
                                         MediaQuery.of(context).padding.top +
-                                            (widget.project.activities.length *
-                                                100);
+                                            (_project.activities.length * 100);
                                   }
                                   _controller.animateTo(scrollTo,
                                       duration:
@@ -179,8 +209,10 @@ class _ProjectPageState extends State<ProjectPage>
                 ],
               ),
             ),
-            (widget.project.activities != null &&
-                    widget.project.activities.length > 0)
+            (_project.activities != null && _project.activities.length > 0)
+                ? _buildDaysChart()
+                : Container(),
+            (_project.activities != null && _project.activities.length > 0)
                 ? Container(
                     margin: EdgeInsets.only(bottom: 5.0),
                     child: Text(
@@ -195,9 +227,9 @@ class _ProjectPageState extends State<ProjectPage>
             ListView.builder(
               shrinkWrap: true,
               physics: BouncingScrollPhysics(),
-              itemCount: widget.project.activities.length,
+              itemCount: _project.activities.length,
               itemBuilder: (bctx, index) {
-                Activity activity = widget.project.activities[index];
+                Activity activity = _project.activities[index];
                 return _buildActivityTile(activity);
               },
             ),
@@ -209,17 +241,23 @@ class _ProjectPageState extends State<ProjectPage>
 
   _startTimer() {
     ApplicationState appState = Provider.of<ApplicationState>(context);
-    if (appState.getCurrentProject() == null ||
-        appState.getCurrentProject() != widget.project)
-      appState.setCurrentProject(widget.project);
-    appState.startTimer();
-    _startBlink();
+    setState(() {
+      if (appState.getCurrentProject() == null ||
+          appState.getCurrentProject() != _project)
+        appState.setCurrentProject(_project);
+      appState.startTimer();
+      _startBlink();
+      _updateProject();
+    });
   }
 
   _pauseTimer() {
     ApplicationState appState = Provider.of<ApplicationState>(context);
-    appState.pauseTimer();
-    _stopBlink();
+    setState(() {
+      appState.pauseTimer();
+      _stopBlink();
+      _updateProject();
+    });
   }
 
   _stopTimer() {
@@ -227,6 +265,7 @@ class _ProjectPageState extends State<ProjectPage>
     setState(() {
       appState.stopTimer();
       _stopBlink();
+      _updateProject();
     });
   }
 
@@ -287,7 +326,7 @@ class _ProjectPageState extends State<ProjectPage>
         setState(() {
           toEdit.setDuration(
               Duration(hours: value[0], minutes: value[1], seconds: value[2]));
-          Hive.box("projects").put(widget.project.id, widget.project);
+          Hive.box("projects").put(_project.id, _project);
         });
       },
     );
@@ -296,20 +335,166 @@ class _ProjectPageState extends State<ProjectPage>
 
   _deleteActivity(Activity toDelete) {
     setState(() {
-      widget.project.activities.remove(toDelete);
-      Hive.box("projects").put(widget.project.id, widget.project);
+      _project.activities.remove(toDelete);
+      Hive.box("projects").put(_project.id, _project);
     });
   }
 
+  double roundDecimal(double dec, int decimals) {
+    dec = (dec * 10).round() / 10;
+    return dec;
+  }
+
+  Widget _buildDaysChart() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 40.0),
+      margin: EdgeInsets.only(bottom: 30.0),
+      child: FlChart(
+        chart: BarChart(
+          mainBarData(),
+        ),
+      ),
+    );
+  }
+
+  BarChartData mainBarData() {
+    return BarChartData(
+      barTouchData: BarTouchData(
+        touchTooltipData: TouchTooltipData(
+            tooltipBgColor: _project.mainColor,
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((touchedSpot) {
+                String weekDay;
+                switch (touchedSpot.spot.x.toInt()) {
+                  case 0:
+                    weekDay = 'Monday';
+                    break;
+                  case 1:
+                    weekDay = 'Tuesday';
+                    break;
+                  case 2:
+                    weekDay = 'Wednesday';
+                    break;
+                  case 3:
+                    weekDay = 'Thursday';
+                    break;
+                  case 4:
+                    weekDay = 'Friday';
+                    break;
+                  case 5:
+                    weekDay = 'Saturday';
+                    break;
+                  case 6:
+                    weekDay = 'Sunday';
+                    break;
+                }
+                return TooltipItem(
+                  weekDay +
+                      '\n' +
+                      roundDecimal(touchedSpot.spot.y - 1, 1).toString(),
+                  TextStyle(color: _project.textColor),
+                );
+              }).toList();
+            }),
+        touchResponseSink: barTouchedResultStreamController.sink,
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        bottomTitles: SideTitles(
+            showTitles: true,
+            textStyle: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+            margin: 16,
+            getTitles: (double value) {
+              switch (value.toInt()) {
+                case 0:
+                  return 'M';
+                case 1:
+                  return 'T';
+                case 2:
+                  return 'W';
+                case 3:
+                  return 'T';
+                case 4:
+                  return 'F';
+                case 5:
+                  return 'S';
+                case 6:
+                  return 'S';
+                default:
+                  return '';
+              }
+            }),
+        leftTitles: const SideTitles(
+          showTitles: false,
+        ),
+      ),
+      borderData: FlBorderData(
+        show: false,
+      ),
+      barGroups: showingGroups(),
+    );
+  }
+
+  List<BarChartGroupData> showingGroups() => List.generate(7, (i) {
+        var value = _getHoursForDay(i);
+        switch (i) {
+          case 0:
+            return makeGroupData(0, value, isTouched: i == touchedIndex);
+          case 1:
+            return makeGroupData(1, value, isTouched: i == touchedIndex);
+          case 2:
+            return makeGroupData(2, value, isTouched: i == touchedIndex);
+          case 3:
+            return makeGroupData(3, value, isTouched: i == touchedIndex);
+          case 4:
+            return makeGroupData(4, value, isTouched: i == touchedIndex);
+          case 5:
+            return makeGroupData(5, value, isTouched: i == touchedIndex);
+          case 6:
+            print(value);
+            return makeGroupData(6, value, isTouched: i == touchedIndex);
+          default:
+            return null;
+        }
+      });
+
+  double _getHoursForDay(int dayIndex) {
+    int toReturn = 0;
+    for (Activity activity in _project.activities) {
+      if (activity.getFirstStarted().weekday - 1 == dayIndex) {
+        toReturn += activity.getDuration().inMinutes;
+      }
+    }
+    return roundDecimal(toReturn / 60, 1);
+  }
+
+  BarChartGroupData makeGroupData(
+    int x,
+    double y, {
+    bool isTouched = false,
+    Color barColor = Colors.white,
+    double width = 22,
+  }) {
+    var maxVal = List.generate(7, (i) {
+      return _getHoursForDay(i);
+    }).reduce(max);
+    return BarChartGroupData(x: x, barRods: [
+      BarChartRodData(
+        y: isTouched ? y + 1 : y,
+        color: isTouched ? _project.mainColor : barColor,
+        width: width,
+        isRound: true,
+        backDrawRodData: BackgroundBarChartRodData(
+          show: true,
+          y: maxVal,
+          color: widget.backgroundColor,
+        ),
+      ),
+    ]);
+  }
+
   Widget _buildActivityTile(Activity activity) {
-    Duration totalTime = activity.getDuration();
-    int secondsCounter = totalTime.inSeconds;
-    int hours = secondsCounter ~/ 60 ~/ 60;
-    int minutes = (secondsCounter ~/ 60 % 60).toInt();
-    int seconds = (secondsCounter % 60 % 60);
-    double hoursSize = (hours != 0) ? 30.0 : 0.0;
-    double minutesSize = (hours != 0) ? 16.0 : 30.0;
-    double secondsSize = 16.0;
     return Slidable(
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
@@ -354,88 +539,106 @@ class _ProjectPageState extends State<ProjectPage>
                   ),
                 ),
               ),
-              RichText(
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: TextStyle(color: Colors.black),
-                  children: [
-                    hours != 0
-                        ? TextSpan(
-                            text: hours.toString() + "H\n",
-                            style: TextStyle(
-                              fontSize: hoursSize,
-                              height: 0.9,
-                            ),
-                          )
-                        : TextSpan(),
-                    TextSpan(
-                      text: minutes.toString() + "m" + (hours != 0 ? "" : "\n"),
-                      style: TextStyle(
-                        fontSize: minutesSize,
-                        height: 0.9,
-                      ),
-                    ),
-                    hours == 0
-                        ? TextSpan(
-                            text: (seconds < 10
-                                    ? ("0" + seconds.toString())
-                                    : seconds.toString()) +
-                                "s",
-                            style: TextStyle(
-                              fontSize: secondsSize,
-                              height: 0.9,
-                            ),
-                          )
-                        : TextSpan(),
-                  ],
-                ),
-              ),
+              _buildActivityDurationText(activity),
             ],
           ),
         ),
       ),
-      actions: <Widget>[
-        IconSlideAction(
-          caption: 'Edit',
-          color: widget.backgroundColor,
-          foregroundColor: Colors.blue,
-          icon: Icons.edit,
-          onTap: () => _editActivity(activity),
-        ),
-        IconSlideAction(
-          caption: 'Delete',
-          color: widget.backgroundColor,
-          foregroundColor: Colors.red,
-          icon: Icons.delete,
-          onTap: () => _deleteActivity(activity),
-        ),
-      ],
-      secondaryActions: <Widget>[
-        IconSlideAction(
-          caption: 'Delete',
-          color: widget.backgroundColor,
-          foregroundColor: Colors.red,
-          icon: Icons.delete,
-          onTap: () => _deleteActivity(activity),
-        ),
-        IconSlideAction(
-          caption: 'Edit',
-          color: widget.backgroundColor,
-          foregroundColor: Colors.blue,
-          icon: Icons.edit,
-          onTap: () => _editActivity(activity),
-        ),
-      ],
+      actions: _buildActivityActions(activity),
+      secondaryActions: _buildActivityActions(activity, secondary: true),
     );
+  }
+
+  Widget _buildActivityDurationText(Activity activity) {
+    if (activity.getIncompleteSubActivity() != null) {
+      return Text(
+        "running\nnow",
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.grey[600]),
+      );
+    }
+    Duration totalTime = activity.getDuration();
+    int secondsCounter = totalTime.inSeconds;
+    int hours = secondsCounter ~/ 60 ~/ 60;
+    int minutes = (secondsCounter ~/ 60 % 60).toInt();
+    int seconds = (secondsCounter % 60 % 60);
+    double hoursSize = (hours != 0) ? 30.0 : 0.0;
+    double minutesSize = (hours != 0) ? 16.0 : 30.0;
+    double secondsSize = 16.0;
+    return RichText(
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: TextStyle(color: Colors.black),
+        children: [
+          hours != 0
+              ? TextSpan(
+                  text: hours.toString() + "H\n",
+                  style: TextStyle(
+                    fontSize: hoursSize,
+                    height: 0.9,
+                  ),
+                )
+              : TextSpan(),
+          TextSpan(
+            text: minutes.toString() + "m" + (hours != 0 ? "" : "\n"),
+            style: TextStyle(
+              fontSize: minutesSize,
+              height: 0.9,
+            ),
+          ),
+          hours == 0
+              ? TextSpan(
+                  text: (seconds < 10
+                          ? ("0" + seconds.toString())
+                          : seconds.toString()) +
+                      "s",
+                  style: TextStyle(
+                    fontSize: secondsSize,
+                    height: 0.9,
+                  ),
+                )
+              : TextSpan(),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActivityActions(Activity activity,
+      {bool secondary = false}) {
+    List<Widget> toReturn;
+    if (activity.getIncompleteSubActivity() != null) {
+      toReturn = <Widget>[];
+    } else {
+      toReturn = <Widget>[
+        IconSlideAction(
+          caption: 'Edit',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.blue,
+          icon: Icons.edit,
+          onTap: () => _editActivity(activity),
+        ),
+        IconSlideAction(
+          caption: 'Delete',
+          color: widget.backgroundColor,
+          foregroundColor: Colors.red,
+          icon: Icons.delete,
+          onTap: () => _deleteActivity(activity),
+        ),
+      ];
+    }
+    if (secondary)
+      return toReturn.reversed.toList();
+    else
+      return toReturn;
   }
 
   Widget _buildTimer() {
     ApplicationState appState = Provider.of<ApplicationState>(context);
     int secondsCounter;
     if (appState.getCurrentProject() == null ||
-        appState.getCurrentProject().id == widget.project.id)
+        appState.getCurrentProject().id == _project.id)
       secondsCounter = appState.getSecondsCounter() ?? 0;
     else
       secondsCounter = 0;
@@ -485,7 +688,7 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   Widget _buildTotTime() {
-    Duration totalTime = widget.project.getTotalTime();
+    Duration totalTime = _project.getTotalTime();
     String hrs = totalTime.inHours.toString() + "H\n";
     String mins = (totalTime.inMinutes % 60).toString() + "m\n";
     String secs = (totalTime.inSeconds % 60).toString() + "s";
@@ -529,7 +732,7 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   Widget _buildAvgTime() {
-    Duration totalTime = widget.project.getAverageTime();
+    Duration totalTime = _project.getAverageTime();
     String hrs = totalTime.inHours.toString() + "H\n";
     String mins = (totalTime.inMinutes % 60).toString() + "m\n";
     String secs = (totalTime.inSeconds % 60).toString() + "s";

@@ -20,6 +20,7 @@ dependencies:
   flutter_slidable: ^0.5.3
   auto_size_text: ^2.1.0
   flutter_picker: ^1.0.15
+  fl_chart: ^0.3.3
 
 dev_dependencies:
   flutter_test:
@@ -31,11 +32,25 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/play.png
-    - assets/pause.png
-    - assets/stop.png
+    - assets/images/play.png
+    - assets/images/pause.png
+    - assets/images/stop.png
+  fonts:
+    - family: Cereal
+      fonts:
+        - asset: assets/fonts/AirbnbCerealMedium.ttf
+        - asset: assets/fonts/AirbnbCerealLight.ttf
+          weight: 100
+        - asset: assets/fonts/AirbnbCerealBook.ttf
+          weight: 300
+        - asset: assets/fonts/AirbnbCerealBold.ttf
+          weight: 600
+        - asset: assets/fonts/AirbnbCerealExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/AirbnbCerealBlack.ttf
+          weight: 900
 
 flutter_icons:
   android: "launcher_icon" 
   ios: true
-  image_path: "assets/icon.png"
+  image_path: "assets/images/icon.png"

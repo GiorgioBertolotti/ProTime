@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
                     "ProTime",
                     style: TextStyle(
                       fontSize: 60.0,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
@@ -244,7 +244,8 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ProjectPage(appState.getCurrentProject()),
+                builder: (context) =>
+                    ProjectPage(appState.getCurrentProject().id),
               ),
             );
           },
@@ -277,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                             height: 40.0,
                             child: Center(
                               child: Image.asset(
-                                "assets/pause.png",
+                                "assets/images/pause.png",
                                 color: appState.getCurrentProject().textColor,
                                 width: 16.0,
                                 height: 16.0,
@@ -295,7 +296,7 @@ class _HomePageState extends State<HomePage> {
                             height: 40.0,
                             child: Center(
                               child: Image.asset(
-                                "assets/play.png",
+                                "assets/images/play.png",
                                 color: appState.getCurrentProject().textColor,
                                 width: 16.0,
                                 height: 16.0,
@@ -313,7 +314,7 @@ class _HomePageState extends State<HomePage> {
                       height: 40.0,
                       child: Center(
                         child: Image.asset(
-                          "assets/stop.png",
+                          "assets/images/stop.png",
                           color: appState.getCurrentProject().textColor,
                           width: 16.0,
                           height: 16.0,
@@ -363,7 +364,7 @@ class _HomePageState extends State<HomePage> {
               appState.setCurrentProject(project);
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => ProjectPage(project),
+                  builder: (context) => ProjectPage(project.id),
                 ),
               );
             },
@@ -380,7 +381,7 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(
                         color: project.textColor,
                         fontSize: 30.0,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

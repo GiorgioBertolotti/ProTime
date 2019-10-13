@@ -21,12 +21,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ProTime',
-      theme: ThemeData(
-        primarySwatch: Colors.grey,
-      ),
       home: Provider<ApplicationState>.value(
         value: ApplicationState(),
         child: MaterialApp(
+          theme: ThemeData(
+            fontFamily: 'Cereal',
+            primarySwatch: Colors.grey,
+          ),
           home: HomePage(),
         ),
       ),
