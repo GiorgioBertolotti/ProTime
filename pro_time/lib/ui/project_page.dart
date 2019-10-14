@@ -278,12 +278,17 @@ class _ProjectPageState extends State<ProjectPage>
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    int timeoutInMinutes = (project.getAverageTime().inMinutes * 1.3).toInt();
+    if (timeoutInMinutes == 0) {
+      timeoutInMinutes = 60;
+    }
+    DateTime dateTimeNotification =
+        DateTime.now().add(Duration(minutes: timeoutInMinutes));
     await flutterLocalNotificationsPlugin.schedule(
         0,
         'Tracking reminder',
         'Don\'t forget to stop your tracking of ' + project.name + "!",
-        DateTime.now().add(Duration(
-            minutes: (project.getAverageTime().inMinutes * 1.3).toInt())),
+        dateTimeNotification,
         platformChannelSpecifics,
         payload: project.id);
   }
