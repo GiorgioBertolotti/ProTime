@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive/hive.dart';
@@ -11,6 +12,7 @@ import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:pro_time/resources/application_state.dart';
 import 'package:pro_time/resources/controls.dart';
+import 'package:pro_time/ui/home.dart';
 import 'package:provider/provider.dart';
 
 class ProjectPage extends StatefulWidget {
@@ -34,6 +36,8 @@ class _ProjectPageState extends State<ProjectPage>
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   StreamController<BarTouchResponse> barTouchedResultStreamController;
   int touchedIndex;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -59,7 +63,13 @@ class _ProjectPageState extends State<ProjectPage>
         }
       });
     });
-
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_notification');
+    var initializationSettingsIOS = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
     super.initState();
   }
 
@@ -211,7 +221,9 @@ class _ProjectPageState extends State<ProjectPage>
                 ],
               ),
             ),
-            (_project.activities != null && _project.activities.length > 0)
+            (_project.activities != null &&
+                    _project.activities.length > 0 &&
+                    _isThereAnyHour())
                 ? _buildDaysChart()
                 : Container(),
             (_project.activities != null && _project.activities.length > 0)
@@ -241,6 +253,45 @@ class _ProjectPageState extends State<ProjectPage>
     );
   }
 
+  Future onSelectNotification(String id) async {
+    for (Project project
+        in Hive.box('projects').values.toList().cast<Project>()) {
+      if (project.id == id) {
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+        break;
+      }
+    }
+  }
+
+  _showNotification(Project project) async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'protime',
+      'ProTime',
+      'This channel is used by ProTime to send timer reminders.',
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+    );
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        0,
+        'Tracking reminder',
+        'Don\'t forget to stop your tracking of ' + project.name + "!",
+        DateTime.now().add(Duration(
+            minutes: (project.getAverageTime().inMinutes * 1.3).toInt())),
+        platformChannelSpecifics,
+        payload: project.id);
+  }
+
+  _cancelNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
   _startTimer() {
     ApplicationState appState = Provider.of<ApplicationState>(context);
     setState(() {
@@ -251,6 +302,7 @@ class _ProjectPageState extends State<ProjectPage>
       _startBlink();
       _updateProject();
     });
+    _showNotification(_project);
   }
 
   _pauseTimer() {
@@ -269,6 +321,7 @@ class _ProjectPageState extends State<ProjectPage>
       _stopBlink();
       _updateProject();
     });
+    _cancelNotifications();
   }
 
   _startBlink() {
@@ -461,6 +514,13 @@ class _ProjectPageState extends State<ProjectPage>
             return null;
         }
       });
+
+  bool _isThereAnyHour() {
+    return List.generate(7, (i) {
+          return _getHoursForDay(i);
+        }).reduce(max) !=
+        0.0;
+  }
 
   double _getHoursForDay(int dayIndex) {
     int toReturn = 0;
