@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,7 +13,6 @@ import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:pro_time/resources/application_state.dart';
 import 'package:pro_time/resources/controls.dart';
-import 'package:pro_time/ui/home.dart';
 import 'package:provider/provider.dart';
 
 class ProjectPage extends StatefulWidget {
@@ -36,8 +36,6 @@ class _ProjectPageState extends State<ProjectPage>
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   StreamController<BarTouchResponse> barTouchedResultStreamController;
   int touchedIndex;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -63,13 +61,6 @@ class _ProjectPageState extends State<ProjectPage>
         }
       });
     });
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('ic_notification');
-    var initializationSettingsIOS = IOSInitializationSettings();
-    var initializationSettings = InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
     super.initState();
   }
 
@@ -253,19 +244,6 @@ class _ProjectPageState extends State<ProjectPage>
     );
   }
 
-  Future onSelectNotification(String id) async {
-    for (Project project
-        in Hive.box('projects').values.toList().cast<Project>()) {
-      if (project.id == id) {
-        await Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-        break;
-      }
-    }
-  }
-
   _showNotification(Project project) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'protime',
@@ -273,24 +251,26 @@ class _ProjectPageState extends State<ProjectPage>
       'This channel is used by ProTime to send timer reminders.',
       importance: Importance.Max,
       priority: Priority.High,
+      ongoing: true,
+      autoCancel: false,
       ticker: 'ticker',
+      enableLights: true,
+      color: project.mainColor,
+      ledColor: project.mainColor,
+      ledOnMs: 1000,
+      ledOffMs: 500,
     );
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    int timeoutInMinutes = (project.getAverageTime().inMinutes * 1.3).toInt();
-    if (timeoutInMinutes == 0) {
-      timeoutInMinutes = 60;
-    }
-    DateTime dateTimeNotification =
-        DateTime.now().add(Duration(minutes: timeoutInMinutes));
     await flutterLocalNotificationsPlugin.schedule(
-        0,
-        'Tracking reminder',
-        'Don\'t forget to stop your tracking of ' + project.name + "!",
-        dateTimeNotification,
-        platformChannelSpecifics,
-        payload: project.id);
+      0,
+      'Tracking active',
+      'The tracking of ' + project.name + " is running!",
+      DateTime.now().add(Duration(seconds: 5)),
+      platformChannelSpecifics,
+      payload: project.id,
+    );
   }
 
   _cancelNotifications() async {
