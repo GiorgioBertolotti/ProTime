@@ -262,11 +262,10 @@ class _ProjectPageState extends State<ProjectPage>
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.schedule(
+    await flutterLocalNotificationsPlugin.show(
       0,
       'Tracking active',
       'The tracking of ' + project.name + " is running!",
-      DateTime.now().add(Duration(seconds: 5)),
       platformChannelSpecifics,
       payload: project.id,
     );
@@ -296,6 +295,7 @@ class _ProjectPageState extends State<ProjectPage>
       _stopBlink();
       _updateProject();
     });
+    _cancelNotifications();
   }
 
   _stopTimer() {
@@ -360,23 +360,20 @@ class _ProjectPageState extends State<ProjectPage>
       textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
       selectedTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
       columnPadding: const EdgeInsets.all(8.0),
-      onConfirm: (Picker picker, List value) {
-        print(value);
-        setState(() {
-          toEdit.setDuration(
-              Duration(hours: value[0], minutes: value[1], seconds: value[2]));
-          Hive.box("projects").put(_project.id, _project);
-        });
+      onConfirm: (Picker picker, List value) async {
+        toEdit.setDuration(
+            Duration(hours: value[0], minutes: value[1], seconds: value[2]));
+        await Hive.box("projects").put(_project.id, _project);
+        setState(() {});
       },
     );
     picker.showModal(context);
   }
 
-  _deleteActivity(Activity toDelete) {
-    setState(() {
-      _project.activities.remove(toDelete);
-      Hive.box("projects").put(_project.id, _project);
-    });
+  _deleteActivity(Activity toDelete) async {
+    _project.activities.remove(toDelete);
+    await Hive.box("projects").put(_project.id, _project);
+    setState(() {});
   }
 
   double roundDecimal(double dec, int decimals) {

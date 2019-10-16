@@ -1,6 +1,7 @@
 import 'package:auto_animated/auto_animated.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pro_time/main.dart';
@@ -287,6 +288,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           onTap: () => setState(() {
                             appState.pauseTimer();
+                            _cancelNotifications();
                           }),
                         )
                       : GestureDetector(
@@ -305,6 +307,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           onTap: () => setState(() {
                             appState.startTimer();
+                            _showNotification(appState.getCurrentProject());
                           }),
                         ),
                   GestureDetector(
@@ -323,6 +326,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     onTap: () => setState(() {
                       appState.stopTimer();
+                      _cancelNotifications();
                     }),
                   ),
                   SizedBox(width: 10.0),
@@ -333,6 +337,38 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  _showNotification(Project project) async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'protime',
+      'ProTime',
+      'This channel is used by ProTime to send timer reminders.',
+      importance: Importance.Max,
+      priority: Priority.High,
+      ongoing: true,
+      autoCancel: false,
+      ticker: 'ticker',
+      enableLights: true,
+      color: project.mainColor,
+      ledColor: project.mainColor,
+      ledOnMs: 1000,
+      ledOffMs: 500,
+    );
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Tracking active',
+      'The tracking of ' + project.name + " is running!",
+      platformChannelSpecifics,
+      payload: project.id,
+    );
+  }
+
+  _cancelNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
   }
 
   Widget _buildProjectTile(Project project) {
