@@ -340,6 +340,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   _showNotification(Project project) async {
+    if (!(project.notificationEnabled ?? true)) return;
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'protime',
       'ProTime',

@@ -7,6 +7,7 @@ class Project {
     this.textColor,
     this.created,
     this.activities,
+    this.notificationEnabled,
   });
 
   String get id => (created.millisecondsSinceEpoch).toString();
@@ -15,6 +16,7 @@ class Project {
   Color textColor;
   DateTime created = DateTime.now();
   List<Activity> activities = List();
+  bool notificationEnabled = true;
 
   Duration getTotalTime() {
     if (activities == null || activities.length == 0)

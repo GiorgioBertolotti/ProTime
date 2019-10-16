@@ -33,6 +33,9 @@ class ProjectsAdapter extends TypeAdapter<Project> {
               obj.activities = activities;
           }
           break;
+        case 5:
+          obj.notificationEnabled = reader.read() as bool;
+          break;
       }
     }
     return obj;
@@ -40,7 +43,7 @@ class ProjectsAdapter extends TypeAdapter<Project> {
 
   @override
   void write(BinaryWriter writer, Project obj) {
-    writer.writeByte(5);
+    writer.writeByte(6);
     writer.writeByte(0);
     writer.write(obj.name);
     writer.writeByte(1);
@@ -51,5 +54,7 @@ class ProjectsAdapter extends TypeAdapter<Project> {
     writer.write(obj.created);
     writer.writeByte(4);
     writer.write(obj.activities);
+    writer.writeByte(5);
+    writer.write(obj.notificationEnabled);
   }
 }

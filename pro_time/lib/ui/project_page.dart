@@ -163,6 +163,61 @@ class _ProjectPageState extends State<ProjectPage>
                       ),
                     ],
                   ),
+                  Positioned(
+                    bottom: 50.0,
+                    left: 30.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _project.notificationEnabled
+                            ? Colors.white
+                            : Colors.grey[700],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 2.0,
+                            offset: Offset(0.0, 4.0),
+                          )
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(100.0),
+                          onTap: () async {
+                            bool value = !_project.notificationEnabled;
+                            _project.notificationEnabled = value;
+                            await Hive.box("projects")
+                                .put(_project.id, _project);
+                            if (!value) {
+                              _cancelNotifications();
+                            } else {
+                              if (appState.timerState == TimerState.STARTED) {
+                                _showNotification(_project);
+                              }
+                            }
+                            setState(() {});
+                          },
+                          child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: _project.notificationEnabled
+                                  ? Icon(
+                                      Icons.notifications,
+                                      size: 30.0,
+                                      color: widget.backgroundColor,
+                                    )
+                                  : Icon(
+                                      Icons.notifications_off,
+                                      size: 30.0,
+                                      color: widget.backgroundColor,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   (_project.activities != null &&
                           _project.activities.length > 0)
                       ? Positioned(
@@ -184,8 +239,14 @@ class _ProjectPageState extends State<ProjectPage>
                                 ),
                                 onPressed: () {
                                   double scrollTo;
+                                  double chartHeight =
+                                      (_project.activities != null &&
+                                              _project.activities.length > 0 &&
+                                              _isThereAnyHour())
+                                          ? 230.0
+                                          : 0.0;
                                   if ((MediaQuery.of(context).padding.top +
-                                          230.0 +
+                                          chartHeight +
                                           (_project.activities.length * 100)) >
                                       (MediaQuery.of(context).size.height -
                                           MediaQuery.of(context).padding.top)) {
@@ -195,7 +256,7 @@ class _ProjectPageState extends State<ProjectPage>
                                   } else {
                                     scrollTo =
                                         MediaQuery.of(context).padding.top +
-                                            230.0 +
+                                            chartHeight +
                                             (_project.activities.length * 100);
                                   }
                                   _controller.animateTo(scrollTo,
@@ -244,6 +305,7 @@ class _ProjectPageState extends State<ProjectPage>
   }
 
   _showNotification(Project project) async {
+    if (!(project.notificationEnabled ?? true)) return;
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'protime',
       'ProTime',
