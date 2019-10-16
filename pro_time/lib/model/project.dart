@@ -5,10 +5,12 @@ class Project {
     this.name,
     this.mainColor,
     this.textColor,
-    DateTime created = DateTime.now(),
-    List<Activity> activities = List(),
-    bool notificationEnabled = true,
-  }) : this.created = created ?? DateTime.now(), this.activities = activities ?? List(), this.notificationEnabled ? notificationEnabled ?? true;
+    DateTime created,
+    List<Activity> activities,
+    bool notificationEnabled,
+  })  : this.created = created ?? DateTime.now(),
+        this.activities = activities ?? List(),
+        this.notificationEnabled = notificationEnabled ?? true;
 
   String get id => (created.millisecondsSinceEpoch).toString();
   String name;

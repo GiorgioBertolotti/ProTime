@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
                 backgroundColor: Colors.white,
                 child: Icon(
                   Icons.add,
-                  size: 38.0,
+                  size: 44.0,
                   color: Colors.black,
                 ),
               ),
@@ -261,6 +261,7 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(
                       color: appState.getCurrentProject().textColor,
                       fontSize: 22.0,
+                      fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
