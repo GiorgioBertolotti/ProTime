@@ -12,7 +12,15 @@ class SubActivityAdapter extends TypeAdapter<SubActivity> {
           obj.dateTimeStart = reader.read() as DateTime;
           break;
         case 1:
-          obj.activityDuration = Duration(seconds: reader.read() as int);
+          if (reader.availableBytes != 0) {
+            var val = reader.read();
+            if (val != null &&
+                (val.runtimeType == int || int.tryParse(val) != null))
+              obj.activityDuration = Duration(seconds: val as int);
+            else
+              obj.activityDuration = null;
+          } else
+            obj.activityDuration = null;
           break;
       }
     }
@@ -25,6 +33,7 @@ class SubActivityAdapter extends TypeAdapter<SubActivity> {
     writer.writeByte(0);
     writer.write(obj.dateTimeStart);
     writer.writeByte(1);
-    writer.write(obj.activityDuration.inSeconds);
+    writer.write(
+        obj.activityDuration != null ? obj.activityDuration.inSeconds : null);
   }
 }

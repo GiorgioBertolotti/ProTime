@@ -21,6 +21,7 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
   Color _tmpMainColor;
   Color _tmpTextColor;
   bool _editMode;
+  bool _nameValid = false;
 
   @override
   void initState() {
@@ -36,6 +37,8 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
       _selectedTextColor = widget.projectToEdit.textColor;
       _tmpMainColor = widget.projectToEdit.mainColor;
       _tmpTextColor = widget.projectToEdit.textColor;
+      if (widget.projectToEdit.name != null &&
+          widget.projectToEdit.name.isNotEmpty) _nameValid = true;
     }
     super.initState();
   }
@@ -54,6 +57,18 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
               hintText: "Enter project name",
               border: UnderlineInputBorder(),
             ),
+            onChanged: (value) {
+              if (!_nameValid && (value != null && value.isNotEmpty)) {
+                setState(() {
+                  _nameValid = true;
+                });
+              }
+              if (_nameValid && (value == null || value.isEmpty)) {
+                setState(() {
+                  _nameValid = false;
+                });
+              }
+            },
           ),
           SizedBox(height: 10.0),
           Row(
@@ -65,12 +80,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                   _openMainColorPicker();
                 },
               ),
-              Container(
-                width: 35.0,
-                height: 35.0,
-                child: CircleAvatar(
-                  backgroundColor: _selectedMainColor,
-                  radius: 35.0,
+              InkWell(
+                onTap: () {
+                  _openMainColorPicker();
+                },
+                child: Container(
+                  width: 35.0,
+                  height: 35.0,
+                  child: CircleAvatar(
+                    backgroundColor: _selectedMainColor,
+                    radius: 35.0,
+                  ),
                 ),
               ),
             ],
@@ -85,12 +105,17 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                   _openTextColorPicker();
                 },
               ),
-              Container(
-                width: 35.0,
-                height: 35.0,
-                child: CircleAvatar(
-                  backgroundColor: _selectedTextColor,
-                  radius: 35.0,
+              InkWell(
+                onTap: () {
+                  _openTextColorPicker();
+                },
+                child: Container(
+                  width: 35.0,
+                  height: 35.0,
+                  child: CircleAvatar(
+                    backgroundColor: _selectedTextColor,
+                    radius: 35.0,
+                  ),
                 ),
               ),
             ],
@@ -108,25 +133,27 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
         FlatButton(
           textColor: Colors.lightBlue,
           child: Text(_editMode ? "Update" : "Add"),
-          onPressed: () {
-            Project proj;
-            if (_editMode) {
-              proj = widget.projectToEdit;
-              proj.name = _nameController.text;
-              proj.mainColor = _selectedMainColor;
-              proj.textColor = _selectedTextColor;
-            } else {
-              proj = Project(
-                name: _nameController.text,
-                mainColor: _selectedMainColor,
-                textColor: _selectedTextColor,
-                created: DateTime.now(),
-                activities: List<Activity>(),
-              );
-            }
-            Hive.box("projects").put(proj.id, proj);
-            Navigator.of(context).pop();
-          },
+          onPressed: !_nameValid
+              ? null
+              : () {
+                  Project proj;
+                  if (_editMode) {
+                    proj = widget.projectToEdit;
+                    proj.name = _nameController.text;
+                    proj.mainColor = _selectedMainColor;
+                    proj.textColor = _selectedTextColor;
+                  } else {
+                    proj = Project(
+                      name: _nameController.text,
+                      mainColor: _selectedMainColor,
+                      textColor: _selectedTextColor,
+                      created: DateTime.now(),
+                      activities: List<Activity>(),
+                    );
+                  }
+                  Hive.box("projects").put(proj.id, proj);
+                  Navigator.of(context).pop();
+                },
         ),
       ],
     );
@@ -188,8 +215,8 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
               child: Text("Select"),
               onPressed: () {
                 setState(() {
-                  _selectedMainColor = _tmpMainColor;
-                  _selectedTextColor = _tmpTextColor;
+                  if (_tmpMainColor != null) _selectedMainColor = _tmpMainColor;
+                  if (_tmpTextColor != null) _selectedTextColor = _tmpTextColor;
                 });
                 Navigator.of(context).pop();
               },

@@ -62,7 +62,7 @@ class _TimerControlsState extends State<TimerControls> {
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
-        color: Colors.green,
+        color: Color(0xFF37C33C),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -101,7 +101,7 @@ class _TimerControlsState extends State<TimerControls> {
               top: 30.0 * scale,
               bottom: 30.0 * scale,
             ),
-            child: Image.asset("assets/play.png"),
+            child: Image.asset("assets/images/play.png"),
           ),
         ),
       ),
@@ -113,7 +113,7 @@ class _TimerControlsState extends State<TimerControls> {
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: Color(0xFFFF3D00),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -147,12 +147,12 @@ class _TimerControlsState extends State<TimerControls> {
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(
-              left: 38.0 * scale,
-              right: 38.0 * scale,
-              top: 38.0 * scale,
-              bottom: 38.0 * scale,
+              left: 46.0 * scale,
+              right: 46.0 * scale,
+              top: 46.0 * scale,
+              bottom: 46.0 * scale,
             ),
-            child: Image.asset("assets/stop.png"),
+            child: Image.asset("assets/images/stop.png"),
           ),
         ),
       ),
@@ -164,7 +164,7 @@ class _TimerControlsState extends State<TimerControls> {
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
-        color: Colors.yellow,
+        color: Color(0xFFFFEB3B),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -203,7 +203,7 @@ class _TimerControlsState extends State<TimerControls> {
               top: 45.0 * scale,
               bottom: 45.0 * scale,
             ),
-            child: Image.asset("assets/pause.png"),
+            child: Image.asset("assets/images/pause.png"),
           ),
         ),
       ),
