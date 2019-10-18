@@ -294,7 +294,8 @@ class _ProjectPageState extends State<ProjectPage>
               physics: BouncingScrollPhysics(),
               itemCount: _project.activities.length,
               itemBuilder: (bctx, index) {
-                Activity activity = _project.activities[index];
+                Activity activity =
+                    _project.activities.reversed.toList()[index];
                 return _buildActivityTile(activity);
               },
             ),
@@ -488,10 +489,7 @@ class _ProjectPageState extends State<ProjectPage>
                     break;
                 }
                 return TooltipItem(
-                  weekDay +
-                      '\n' +
-                      roundDecimal(touchedSpot.spot.y - 1, 1).toString() +
-                      "H",
+                  weekDay + '\n' + touchedSpot.spot.y.toString() + "H",
                   TextStyle(color: _project.textColor),
                 );
               }).toList();
@@ -587,7 +585,7 @@ class _ProjectPageState extends State<ProjectPage>
     }).reduce(max);
     return BarChartGroupData(x: x, barRods: [
       BarChartRodData(
-        y: isTouched ? y + 1 : y,
+        y: y,
         color: isTouched ? _project.mainColor : barColor,
         width: width,
         isRound: true,

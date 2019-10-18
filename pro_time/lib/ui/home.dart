@@ -397,9 +397,6 @@ class _HomePageState extends State<HomePage> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              ApplicationState appState =
-                  Provider.of<ApplicationState>(context);
-              appState.setCurrentProject(project);
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => ProjectPage(project.id),
@@ -427,18 +424,23 @@ class _HomePageState extends State<HomePage> {
                       maxFontSize: 34.0,
                     ),
                   ),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: TextStyle(color: project.textColor),
-                      children: [
-                        TextSpan(
+                  Container(
+                    margin: const EdgeInsets.only(top: 5.0),
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: TextStyle(color: project.textColor),
+                        children: [
+                          TextSpan(
                             text: hrs,
-                            style: TextStyle(fontSize: 30.0, height: 0.9)),
-                        TextSpan(
+                            style: TextStyle(fontSize: 30.0, height: 0.9),
+                          ),
+                          TextSpan(
                             text: mins,
-                            style: TextStyle(fontSize: 16.0, height: 0.9)),
-                      ],
+                            style: TextStyle(fontSize: 16.0, height: 0.9),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

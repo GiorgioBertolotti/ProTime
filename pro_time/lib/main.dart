@@ -25,13 +25,14 @@ void main() async {
   runApp(ProTime());
 }
 
-Future onSelectNotification(String id) async {}
+Future onSelectNotification(String id) async {
+  // TODO: Routing to project detail page
+}
 
 enum TimerState { STOPPED, STARTED, PAUSED }
+final navigatorKey = new GlobalKey<NavigatorState>();
 
 class ProTime extends StatelessWidget {
-  static final navigatorKey = new GlobalKey<NavigatorState>();
-
   @override
   Widget build(BuildContext context) {
     return Provider<ApplicationState>.value(
