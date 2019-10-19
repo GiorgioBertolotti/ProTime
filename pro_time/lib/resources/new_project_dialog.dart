@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:hive/hive.dart';
 
@@ -127,7 +128,7 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
           textColor: Colors.deepOrange,
           child: Text("Cancel"),
           onPressed: () {
-            Navigator.of(context).pop();
+            ProTime.navigatorKey.currentState.pop();
           },
         ),
         FlatButton(
@@ -152,7 +153,7 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                     );
                   }
                   Hive.box("projects").put(proj.id, proj);
-                  Navigator.of(context).pop();
+                  ProTime.navigatorKey.currentState.pop();
                 },
         ),
       ],
@@ -207,7 +208,7 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
               textColor: Colors.deepOrange,
               child: Text("Cancel"),
               onPressed: () {
-                Navigator.of(context).pop();
+                ProTime.navigatorKey.currentState.pop();
               },
             ),
             FlatButton(
@@ -218,7 +219,7 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
                   if (_tmpMainColor != null) _selectedMainColor = _tmpMainColor;
                   if (_tmpTextColor != null) _selectedTextColor = _tmpTextColor;
                 });
-                Navigator.of(context).pop();
+                ProTime.navigatorKey.currentState.pop();
               },
             ),
           ],

@@ -122,7 +122,7 @@ class _ProjectPageState extends State<ProjectPage>
                             ),
                             IconButton(
                               onPressed: () {
-                                Navigator.of(context).pop();
+                                ProTime.navigatorKey.currentState.pop();
                               },
                               icon: Icon(
                                 Icons.close,
@@ -429,6 +429,8 @@ class _ProjectPageState extends State<ProjectPage>
         await Hive.box("projects").put(_project.id, _project);
         setState(() {});
       },
+      confirmTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
+      cancelTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
     );
     picker.showModal(context);
   }
@@ -463,33 +465,22 @@ class _ProjectPageState extends State<ProjectPage>
         touchTooltipData: TouchTooltipData(
             tooltipBgColor: _project.mainColor,
             getTooltipItems: (touchedSpots) {
+              print(touchedSpots);
               return touchedSpots.map((touchedSpot) {
-                String weekDay;
-                switch (touchedSpot.spot.x.toInt()) {
-                  case 0:
-                    weekDay = 'Monday';
-                    break;
-                  case 1:
-                    weekDay = 'Tuesday';
-                    break;
-                  case 2:
-                    weekDay = 'Wednesday';
-                    break;
-                  case 3:
-                    weekDay = 'Thursday';
-                    break;
-                  case 4:
-                    weekDay = 'Friday';
-                    break;
-                  case 5:
-                    weekDay = 'Saturday';
-                    break;
-                  case 6:
-                    weekDay = 'Sunday';
-                    break;
-                }
+                List days = [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday'
+                ];
                 return TooltipItem(
-                  weekDay + '\n' + touchedSpot.spot.y.toString() + "H",
+                  days[touchedSpot.spot.x.toInt()] +
+                      '\n' +
+                      touchedSpot.spot.y.toString() +
+                      "H",
                   TextStyle(color: _project.textColor),
                 );
               }).toList();
@@ -536,24 +527,7 @@ class _ProjectPageState extends State<ProjectPage>
 
   List<BarChartGroupData> showingGroups() => List.generate(7, (i) {
         var value = _getHoursForDay(i);
-        switch (i) {
-          case 0:
-            return makeGroupData(0, value, isTouched: i == touchedIndex);
-          case 1:
-            return makeGroupData(1, value, isTouched: i == touchedIndex);
-          case 2:
-            return makeGroupData(2, value, isTouched: i == touchedIndex);
-          case 3:
-            return makeGroupData(3, value, isTouched: i == touchedIndex);
-          case 4:
-            return makeGroupData(4, value, isTouched: i == touchedIndex);
-          case 5:
-            return makeGroupData(5, value, isTouched: i == touchedIndex);
-          case 6:
-            return makeGroupData(6, value, isTouched: i == touchedIndex);
-          default:
-            return null;
-        }
+        return makeGroupData(i, value, isTouched: i == touchedIndex);
       });
 
   bool _isThereAnyHour() {
