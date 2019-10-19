@@ -211,8 +211,9 @@ class _HomePageState extends State<HomePage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
           onTap: () {
-            ProTime.navigatorKey.currentState
-                .pushNamed("/projects/" + appState.getCurrentProject().id);
+            ProTime.navigatorKey.currentState.pushNamed(
+                "/projects/" + appState.getCurrentProject().id,
+                arguments: appState.getCurrentProject().id);
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -362,7 +363,7 @@ class _HomePageState extends State<HomePage> {
           child: InkWell(
             onTap: () {
               ProTime.navigatorKey.currentState
-                  .pushNamed("/projects/" + project.id);
+                  .pushNamed("/projects/" + project.id, arguments: project.id);
             },
             borderRadius: BorderRadius.circular(30.0),
             child: Container(

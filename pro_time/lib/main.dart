@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
@@ -29,7 +30,8 @@ void main() async {
       await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
   runApp(ProTime());
   if (details.didNotificationLaunchApp) {
-    ProTime.navigatorKey.currentState.pushNamed("/projects/" + details.payload);
+    ProTime.navigatorKey.currentState
+        .pushNamed("/projects/" + details.payload, arguments: details.payload);
   }
 }
 
@@ -41,7 +43,12 @@ Future _openBoxes() async {
   ]);
 }
 
-Future onSelectNotification(String id) async {}
+Future onSelectNotification(String id) async {
+  ProTime.navigatorKey.currentState.pushNamedAndRemoveUntil("/projects/" + id,
+      (currentRoute) {
+    return currentRoute.settings.name == "/";
+  }, arguments: id);
+}
 
 enum TimerState { STOPPED, STARTED, PAUSED }
 
@@ -50,22 +57,22 @@ class ProTime extends StatelessWidget {
 
   Route routes(RouteSettings settings) {
     if (settings.name == "/") {
-      return MaterialPageRoute(
+      return CupertinoPageRoute(
         builder: (_) => HomePage(),
       );
     } else if (settings.name.startsWith("/projects/")) {
       try {
         String id = settings.name.split("/")[2];
-        return MaterialPageRoute(
+        return CupertinoPageRoute(
           builder: (_) => ProjectPage(id),
         );
       } catch (e) {
-        return MaterialPageRoute(
+        return CupertinoPageRoute(
           builder: (_) => HomePage(),
         );
       }
     } else {
-      return MaterialPageRoute(
+      return CupertinoPageRoute(
         builder: (_) => HomePage(),
       );
     }
