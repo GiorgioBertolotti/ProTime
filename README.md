@@ -1,6 +1,11 @@
+<p align="center"><a href="https://bertolotti.dev/ProTime"><img height="125px" width="125px" src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/master/icon/icon.png" alt="Fliver Rider"/></a></p>
+
 # ProTime
 
 [![Build Status](https://travis-ci.com/GiorgioBertolotti/ProTime.svg?branch=master)](https://travis-ci.com/GiorgioBertolotti/ProTime)
+[![Stars](https://img.shields.io/github/stars/GiorgioBertolotti/ProTime.svg)](https://github.com/GiorgioBertolotti/ProTime/stargazers)
+[![Forks](https://img.shields.io/github/forks/GiorgioBertolotti/ProTime.svg)](https://github.com/GiorgioBertolotti/ProTime/network/members)
+[![Issues](https://img.shields.io/github/issues/GiorgioBertolotti/ProTime.svg)](https://github.com/GiorgioBertolotti/ProTime/issues)
 
 ## Why?
 
