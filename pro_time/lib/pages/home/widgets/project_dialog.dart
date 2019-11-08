@@ -68,19 +68,11 @@ class _ProjectDialogState extends State<ProjectDialog> {
             },
           ),
           SizedBox(height: 10.0),
-          _colorButton(
-            context,
-            () => _setMainColor(context),
-            "Pick main color",
-            _selectedMainColor
-          ),
+          _colorButton(context, () => _setMainColor(context), "Pick main color",
+              _selectedMainColor),
           SizedBox(height: 10.0),
-          _colorButton(
-            context,
-            () => _setTextColor(context),
-            "Pick text color",
-            _selectedTextColor
-          ),
+          _colorButton(context, () => _setTextColor(context), "Pick text color",
+              _selectedTextColor),
         ],
       ),
       actions: [
@@ -93,30 +85,14 @@ class _ProjectDialogState extends State<ProjectDialog> {
           child: Text(_editMode ? "Update" : "Add"),
           onPressed: !_nameValid
               ? null
-              : () {
-                  Project proj;
-                  if (_editMode) {
-                    proj = widget.projectToEdit.copyWith(
-                        name: _nameController.text,
-                        mainColor: _selectedMainColor,
-                        textColor: _selectedTextColor);
-                  } else {
-                    proj = Project(
-                      name: _nameController.text,
-                      mainColor: _selectedMainColor,
-                      textColor: _selectedTextColor,
-                      created: DateTime.now(),
-                    );
-                  }
-                  widget.projectsService.addProject(proj);
-                  Navigator.of(context).pop();
-                },
+              : () => _saveOrCreateProject(context),
         ),
       ],
     );
   }
 
-  Container _colorButton(BuildContext context, Function onTap, String title, Color color) {
+  Container _colorButton(
+      BuildContext context, Function onTap, String title, Color color) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(width: 1, color: Colors.grey.withAlpha(100)),
@@ -160,5 +136,26 @@ class _ProjectDialogState extends State<ProjectDialog> {
         _selectedTextColor = color;
       });
     }
+  }
+
+  void _saveOrCreateProject(BuildContext context) {
+    Project proj;
+    if (_editMode) {
+      proj = widget.projectToEdit.copyWith(
+        name: _nameController.text,
+        mainColor: _selectedMainColor,
+        textColor: _selectedTextColor,
+      );
+      widget.projectsService.replaceProject(proj);
+    } else {
+      proj = Project(
+        name: _nameController.text,
+        mainColor: _selectedMainColor,
+        textColor: _selectedTextColor,
+        created: DateTime.now(),
+      );
+      widget.projectsService.addProject(proj);
+    }
+    Navigator.of(context).pop();
   }
 }

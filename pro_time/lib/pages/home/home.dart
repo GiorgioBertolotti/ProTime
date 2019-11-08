@@ -90,6 +90,7 @@ class _HomePageState extends State<HomePage> {
             if (projects.length == 0)
               return Center(
                 child: FlatButton(
+                  padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -99,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   child: Text(
-                    "Add a project",
+                    "ADD A PROJECT",
                     style: TextStyle(color: Colors.white, fontSize: 30.0),
                   ),
                 ),
