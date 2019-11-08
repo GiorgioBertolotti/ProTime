@@ -22,6 +22,7 @@ dependencies:
   fl_chart: ^0.4.1
   flutter_local_notifications: ^0.8.4
   get_it: ^3.0.3
+  rxdart: ^0.22.6
 
 dev_dependencies:
   flutter_test:

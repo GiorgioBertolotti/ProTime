@@ -9,6 +9,7 @@ import 'package:pro_time/model/time.dart';
 import 'package:pro_time/pages/project/widgets/activity_tile.dart';
 import 'package:pro_time/pages/project/widgets/hour_bar_chart.dart';
 import 'package:pro_time/pages/project/widgets/notification_toggle.dart';
+import 'package:pro_time/pages/project/widgets/project_timer.dart';
 import 'package:pro_time/pages/project/widgets/time_stats_text.dart';
 import 'package:pro_time/pages/project/widgets/timer_controls.dart';
 import 'package:pro_time/pages/project/widgets/timer_text.dart';
@@ -32,24 +33,10 @@ class _ProjectPageState extends State<ProjectPage>
     with TickerProviderStateMixin {
   int projectId;
   Project _project;
-  Timer _blinkTimer;
-  Duration _halfSec = const Duration(milliseconds: 0500);
-  bool _timerVisibility = true;
   bool _first = true;
   ScrollController _controller = ScrollController();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   ProjectWithActivities _projectWithActivities;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    if (_blinkTimer != null) _blinkTimer.cancel();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +44,6 @@ class _ProjectPageState extends State<ProjectPage>
 
     if (_first) {
       _first = false;
-      if (widget.timerService.timerState == TimerState.STARTED) _startBlink();
     }
 
     return SafeArea(
@@ -131,21 +117,9 @@ class _ProjectPageState extends State<ProjectPage>
                               ],
                             ),
                             SizedBox(height: 80.0),
-                            Center(
-                              child: Opacity(
-                                opacity: _timerVisibility ? 1 : 0,
-                                child: _buildTimer(),
-                              ),
-                            ),
-                            SizedBox(height: 20.0),
-                            Center(
-                              child: TimerControls(
-                                startCallback: _startTimer,
-                                pauseCallback: _pauseTimer,
-                                stopCallback: _stopTimer,
-                                initialState: widget.timerService.timerState,
-                                scaffoldKey: _scaffoldKey,
-                              ),
+                            ProjectTimer(
+                              scaffoldKey: _scaffoldKey,
+                              project: _project,
                             ),
                           ],
                         ),
@@ -258,42 +232,7 @@ class _ProjectPageState extends State<ProjectPage>
     );
   }
 
-  _startTimer() {
-    widget.timerService.startTimer(_project.id);
-    showNotification(_project);
-    _startBlink();
-  }
 
-  _pauseTimer() {
-    widget.timerService.pauseTimer();
-    _stopBlink();
-    cancelNotifications();
-  }
-
-  _stopTimer() {
-    final Activity activity = widget.timerService.stopTimer();
-    setState(() {
-      _stopBlink();
-    });
-    widget.activitiesService.addActivity(activity);
-    cancelNotifications();
-  }
-
-  _startBlink() {
-    _blinkTimer = Timer.periodic(
-      _halfSec,
-      (Timer timer) => setState(() {
-        _timerVisibility = !_timerVisibility;
-      }),
-    );
-  }
-
-  _stopBlink() {
-    if (_blinkTimer != null && _blinkTimer.isActive) _blinkTimer.cancel();
-    setState(() {
-      _timerVisibility = true;
-    });
-  }
 
   Widget _buildDaysChart() {
     return Container(
@@ -307,25 +246,6 @@ class _ProjectPageState extends State<ProjectPage>
     );
   }
 
-  Widget _buildTimer() {
-    int secondsCounter =
-        widget.timerService.getActiveDuration()?.inSeconds ?? 0;
-    if (secondsCounter == null) return Container();
-    int hours = secondsCounter ~/ 60 ~/ 60;
-    int minutes = (secondsCounter ~/ 60 % 60).toInt();
-    int seconds = (secondsCounter % 60 % 60);
-    double hoursSize = (hours != 0) ? 40.0 : 0.0;
-    double minutesSize = (hours != 0) ? 20.0 : 40.0;
-    double secondsSize = 20.0;
-    return TimerText(
-      hours: hours,
-      hoursSize: hoursSize,
-      minutes: minutes,
-      minutesSize: minutesSize,
-      seconds: seconds,
-      secondsSize: secondsSize,
-    );
-  }
 
   Widget _buildTotTime() {
     final totalTime = _projectWithActivities.totalHours;

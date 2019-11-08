@@ -5,123 +5,146 @@ import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/main.dart';
 import 'package:pro_time/model/time.dart';
+import 'package:pro_time/pages/project/project_page.dart';
+import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/services/timer/timer_service.dart';
 
 class BottomActivityController extends StatelessWidget {
   final _timerService = getIt<TimerService>();
+  final _projectService = getIt<ProjectsService>();
   @override
   Widget build(BuildContext context) {
-    Project project; // @TODO set to active project
-    return Container(
-      height: 40.0,
-      width: double.infinity,
-      margin: EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.0),
-        color: Colors.red, // @TODO: use current project color
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(15.0),
-          onTap: () => Navigator.pushNamed(context, "home",
-              arguments: project.id),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(20.0, 5.0, 10.0, 5.0),
-                  child: AutoSizeText(
-                    project.name,
-                    style: TextStyle(
-                      color: project.textColor,
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 16.0,
-                    maxFontSize: 24.0,
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  (_timerService.timerState == TimerState.STARTED)
-                      ? GestureDetector(
-                          child: Container(
-                            color: Colors.transparent,
-                            width: 40.0,
-                            height: 40.0,
-                            child: Center(
-                              child: Image.asset(
-                                "assets/images/pause.png",
-                                color: project.textColor,
-                                width: 16.0,
-                                height: 16.0,
-                              ),
-                            ),
+    int id = _timerService.activeProjectId;
+    if (id != null) {
+      return StreamBuilder<Project>(
+        stream: _projectService.getProject(id),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          Project project = snapshot.data;
+          return Container(
+            height: 40.0,
+            width: double.infinity,
+            margin: EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.0),
+              color: Colors.red, // @TODO: use current project color
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(15.0),
+                onTap: () => Navigator.pushNamed(context, ProjectPage.routeName,
+                    arguments: project.id),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(20.0, 5.0, 10.0, 5.0),
+                        child: AutoSizeText(
+                          project.name,
+                          style: TextStyle(
+                            color: project != null
+                                ? project.textColor
+                                : Colors.white,
+                            fontSize: 22.0,
+                            fontWeight: FontWeight.w700,
                           ),
-                          onTap: () {
-                            //  @TODO: set state
-                            _timerService.pauseTimer();
-                            _cancelNotifications();
-                          })
-                      : GestureDetector(
-                          child: Container(
-                            color: Colors.transparent,
-                            width: 40.0,
-                            height: 40.0,
-                            child: Center(
-                              child: Image.asset(
-                                "assets/images/play.png",
-                                color: project.textColor,
-                                width: 16.0,
-                                height: 16.0,
-                              ),
-                            ),
-                          ),
-                          onTap: () {
-                            _timerService.startTimer(project.id);
-                            _showNotification(project);
-                          },
-                        ),
-                  GestureDetector(
-                    child: Container(
-                      color: Colors.transparent,
-                      width: 40.0,
-                      height: 40.0,
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/stop.png",
-                          color: project.textColor,
-                          width: 16.0,
-                          height: 16.0,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 16.0,
+                          maxFontSize: 24.0,
                         ),
                       ),
                     ),
-                    onTap: () {
-                      // @TODO: set state
-                      _timerService.stopTimer();
-                      _cancelNotifications();
-                    },
-                  ),
-                  SizedBox(width: 10.0),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+                    Row(
+                      children: [
+                        (_timerService.timerState == TimerState.STARTED)
+                            ? GestureDetector(
+                                child: Container(
+                                  color: Colors.transparent,
+                                  width: 40.0,
+                                  height: 40.0,
+                                  child: Center(
+                                    child: Image.asset(
+                                      "assets/images/pause.png",
+                                      color: project != null
+                                          ? project.textColor
+                                          : Colors.white,
+                                      width: 16.0,
+                                      height: 16.0,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  //  @TODO: set state
+                                  _timerService.pauseTimer();
+                                  _cancelNotifications();
+                                })
+                            : GestureDetector(
+                                child: Container(
+                                  color: Colors.transparent,
+                                  width: 40.0,
+                                  height: 40.0,
+                                  child: Center(
+                                    child: Image.asset(
+                                      "assets/images/play.png",
+                                      color: project != null
+                                          ? project.textColor
+                                          : Colors.white,
+                                      width: 16.0,
+                                      height: 16.0,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  _timerService.startTimer(project.id);
+                                  _showNotification(project);
+                                },
+                              ),
+                        GestureDetector(
+                          child: Container(
+                            color: Colors.transparent,
+                            width: 40.0,
+                            height: 40.0,
+                            child: Center(
+                              child: Image.asset(
+                                "assets/images/stop.png",
+                                color: project != null
+                                    ? project.textColor
+                                    : Colors.white,
+                                width: 16.0,
+                                height: 16.0,
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            // @TODO: set state
+                            _timerService.stopTimer();
+                            _cancelNotifications();
+                          },
+                        ),
+                        SizedBox(width: 10.0),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return Container();
   }
 
   _showNotification(Project project) async {
