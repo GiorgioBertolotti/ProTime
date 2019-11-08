@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pro_time/pages/home/home.dart';
+import 'package:pro_time/pages/project/project_page.dart';
 import 'package:pro_time/resources/activity_adapter.dart';
 import 'package:pro_time/resources/application_state.dart';
 import 'package:pro_time/resources/projects_adapter.dart';
 import 'package:pro_time/resources/subactivity_adapter.dart';
-import 'package:pro_time/ui/home.dart';
-import 'package:pro_time/ui/project_page.dart';
 import 'package:provider/provider.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
