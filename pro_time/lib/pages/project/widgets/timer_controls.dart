@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_time/main.dart';
+import 'package:pro_time/model/time.dart';
 
 class TimerControls extends StatefulWidget {
   TimerControls({
@@ -38,7 +38,7 @@ class _TimerControlsState extends State<TimerControls> {
         return _buildStartButton();
       case TimerState.STARTED:
         return Column(
-          children: <Widget>[
+          children: [
             _buildPauseButton(),
             SizedBox(height: 30.0),
             _buildStopButton(scale: 0.5),
@@ -46,7 +46,7 @@ class _TimerControlsState extends State<TimerControls> {
         );
       case TimerState.PAUSED:
         return Column(
-          children: <Widget>[
+          children: [
             _buildStartButton(),
             SizedBox(height: 30.0),
             _buildStopButton(scale: 0.5),
