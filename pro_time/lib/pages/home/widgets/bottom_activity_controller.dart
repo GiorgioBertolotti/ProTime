@@ -29,7 +29,7 @@ class BottomActivityController extends StatelessWidget {
             margin: EdgeInsets.all(10.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15.0),
-              color: Colors.red, // @TODO: use current project color
+              color: project.mainColor, // @TODO: use current project color
               boxShadow: [
                 BoxShadow(
                   color: Colors.black26,
@@ -50,26 +50,50 @@ class BottomActivityController extends StatelessWidget {
                     Expanded(
                       child: Container(
                         padding: EdgeInsets.fromLTRB(20.0, 5.0, 10.0, 5.0),
-                        child: AutoSizeText(
-                          project.name,
-                          style: TextStyle(
-                            color: project != null
-                                ? project.textColor
-                                : Colors.white,
-                            fontSize: 22.0,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          minFontSize: 16.0,
-                          maxFontSize: 24.0,
+                        child: Row(
+                          children: <Widget>[
+                            AutoSizeText(
+                              project.name,
+                              style: TextStyle(
+                                color: project != null
+                                    ? project.textColor
+                                    : Colors.white,
+                                fontSize: 22.0,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 16.0,
+                              maxFontSize: 24.0,
+                            ),
+                            SizedBox(
+                              width: 10.0,
+                            ),
+                            StreamBuilder<Duration>(
+                              stream: _timerService.getActiveDurationStream(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return Container();
+                                }
+                                return _buildTimer(
+                                    snapshot.data.inSeconds, project);
+                              },
+                            )
+                          ],
                         ),
                       ),
                     ),
                     Row(
                       children: [
-                        (_timerService.timerState == TimerState.STARTED)
-                            ? GestureDetector(
+                        StreamBuilder<TimerState>(
+                          stream: _timerService.getTimerStateStream(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return Container();
+                            }
+                            TimerState timerState = snapshot.data;
+                            if (timerState == TimerState.STARTED) {
+                              return GestureDetector(
                                 child: Container(
                                   color: Colors.transparent,
                                   width: 40.0,
@@ -89,8 +113,10 @@ class BottomActivityController extends StatelessWidget {
                                   //  @TODO: set state
                                   _timerService.pauseTimer();
                                   _cancelNotifications();
-                                })
-                            : GestureDetector(
+                                },
+                              );
+                            } else {
+                              return GestureDetector(
                                 child: Container(
                                   color: Colors.transparent,
                                   width: 40.0,
@@ -110,7 +136,10 @@ class BottomActivityController extends StatelessWidget {
                                   _timerService.startTimer(project.id);
                                   _showNotification(project);
                                 },
-                              ),
+                              );
+                            }
+                          },
+                        ),
                         GestureDetector(
                           child: Container(
                             color: Colors.transparent,
@@ -145,6 +174,26 @@ class BottomActivityController extends StatelessWidget {
       );
     }
     return Container();
+  }
+
+  Widget _buildTimer(int secondsCounter, Project project) {
+    int hours = secondsCounter ~/ 60 ~/ 60;
+    int minutes = (secondsCounter ~/ 60 % 60).toInt();
+    int seconds = (secondsCounter % 60 % 60);
+
+    String hoursStr = hours.toString().length == 1
+        ? '0' + hours.toString()
+        : hours.toString();
+    String minutesStr = minutes.toString().length == 1
+        ? '0' + minutes.toString()
+        : minutes.toString();
+    String secondsStr = seconds.toString().length == 1
+        ? '0' + seconds.toString()
+        : seconds.toString();
+    return Text(
+      hoursStr + ':' + minutesStr + ':' + secondsStr,
+      style: TextStyle(fontSize: 18.0, color: project.textColor),
+    );
   }
 
   _showNotification(Project project) async {

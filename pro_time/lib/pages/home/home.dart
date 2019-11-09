@@ -31,27 +31,32 @@ class _HomePageState extends State<HomePage> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: widget.backgroundColor,
-        floatingActionButton: Padding(
-          padding: EdgeInsets.only(
-              bottom: (widget.timerService.timerState != TimerState.STOPPED)
-                  ? 50.0
-                  : 0),
-          child: FloatingActionButton(
-            onPressed: () async {
-              await showDialog(
-                context: context,
-                builder: (ctx) {
-                  return ProjectDialog();
+        floatingActionButton: StreamBuilder<TimerState>(
+          stream: widget.timerService.getTimerStateStream(),
+          builder: (context, snapshot) {
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: (snapshot.hasData && snapshot.data != TimerState.STOPPED)
+                      ? 50.0
+                      : 0),
+              child: FloatingActionButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (ctx) {
+                      return ProjectDialog();
+                    },
+                  );
                 },
-              );
-            },
-            backgroundColor: Colors.white,
-            child: Icon(
-              Icons.add,
-              size: 44.0,
-              color: Colors.black,
-            ),
-          ),
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.add,
+                  size: 44.0,
+                  color: Colors.black,
+                ),
+              ),
+            );
+          }
         ),
         body: _buildBody(),
       ),
@@ -90,7 +95,8 @@ class _HomePageState extends State<HomePage> {
             if (projects.length == 0)
               return Center(
                 child: FlatButton(
-                  padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -191,9 +197,15 @@ class _HomePageState extends State<HomePage> {
       Column(children: columnChildren),
       Align(
         alignment: Alignment.bottomCenter,
-        child: (widget.timerService.timerState != TimerState.STOPPED)
-            ? BottomActivityController()
-            : Container(),
+        child: StreamBuilder<TimerState>(
+          stream: widget.timerService.getTimerStateStream(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data == TimerState.STOPPED) {
+              return Container();
+            }
+            return BottomActivityController();
+          },
+        ),
       )
     ];
     return Stack(children: stackChildren);

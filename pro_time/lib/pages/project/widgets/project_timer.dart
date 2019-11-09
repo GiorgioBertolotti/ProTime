@@ -35,7 +35,7 @@ class _ProjectTimerState extends State<ProjectTimer> {
       _secondsCounter = widget.timerService.getActiveDuration().inSeconds;
     }
     _timerSubscription =
-        widget.timerService.getActiveDurationObservable().listen((duration) {
+        widget.timerService.getActiveDurationStream().listen((duration) {
       if (duration.inSeconds != _secondsCounter) {
         setState(() {
           _secondsCounter = duration.inSeconds;

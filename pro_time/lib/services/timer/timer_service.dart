@@ -9,11 +9,18 @@ class TimerService {
   int activeProjectId;
 
   Stopwatch stopWatch = Stopwatch();
-  BehaviorSubject<Duration> _timerSubj =
-      BehaviorSubject<Duration>.seeded(Duration(seconds: 0));
+  BehaviorSubject<Duration> _timerSubj = BehaviorSubject<Duration>.seeded(
+    Duration(seconds: 0),
+  );
+  BehaviorSubject<TimerState> _timerStateSubj =
+      BehaviorSubject<TimerState>.seeded(TimerState.STOPPED);
 
   TimerService() {
-    Timer.periodic(Duration(milliseconds: 500), (timer) => _timerSubj.add(stopWatch?.elapsed));
+    Timer.periodic(Duration(milliseconds: 500), (timer) {
+      if (stopWatch != null && _timerSubj.value.inSeconds != stopWatch.elapsed.inSeconds) {
+        _timerSubj.add(stopWatch?.elapsed);
+      }
+    });
   }
 
   DateTime startTime;
@@ -22,6 +29,7 @@ class TimerService {
     startTime = DateTime.now();
     activeProjectId = projectId;
     timerState = TimerState.STARTED;
+    _timerStateSubj.add(timerState);
   }
 
   Activity stopTimer() {
@@ -33,19 +41,27 @@ class TimerService {
       startDateTime: startTime,
     );
     activeProjectId = null;
-    timerState = TimerState.STARTED;
+    timerState = TimerState.STOPPED;
+    stopWatch.stop();
     stopWatch.reset();
+    _timerStateSubj.add(timerState);
     return activity;
   }
 
   pauseTimer() {
     stopWatch.stop();
+    timerState = TimerState.PAUSED;
+    _timerStateSubj.add(timerState);
     return stopWatch.elapsed;
   }
 
   Duration getActiveDuration() => stopWatch?.elapsed;
 
-  Stream<Duration> getActiveDurationObservable() {
+  Stream<Duration> getActiveDurationStream() {
     return _timerSubj.stream;
+  }
+
+  Stream<TimerState> getTimerStateStream() {
+    return _timerStateSubj.stream;
   }
 }
