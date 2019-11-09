@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/main.dart';
+import 'package:pro_time/pages/project/project_page.dart';
 import 'package:pro_time/resources/application_state.dart';
 import 'package:provider/provider.dart';
 
@@ -35,8 +36,7 @@ class BottomActivityControls extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
           onTap: () {
-            ProTime.navigatorKey.currentState.pushNamed(
-                "/projects/" + appState.getCurrentProject().id,
+            ProTime.navigatorKey.currentState.pushNamed(ProjectPage.routeName,
                 arguments: appState.getCurrentProject().id);
           },
           child: Row(

@@ -23,7 +23,7 @@ class TimerControls extends StatefulWidget {
 }
 
 class _TimerControlsState extends State<TimerControls> {
-  TimerState _state = TimerState.STOPPED;
+  TimerState _state = TimerState.DISABLED;
 
   @override
   void initState() {
@@ -52,17 +52,24 @@ class _TimerControlsState extends State<TimerControls> {
             _buildStopButton(scale: 0.5),
           ],
         );
+      case TimerState.DISABLED:
+        return Column(
+          children: [
+            _buildStartButton(color: Theme.of(context).disabledColor),
+          ],
+        );
       default:
         return Container();
     }
   }
 
-  Widget _buildStartButton({double scale = 1.0}) {
+  Widget _buildStartButton(
+      {double scale = 1.0, Color color = const Color(0xFF37C33C)}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
-        color: Color(0xFF37C33C),
+        color: color,
         boxShadow: [
           BoxShadow(
             color: Colors.black26,

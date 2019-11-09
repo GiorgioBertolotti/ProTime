@@ -50,6 +50,7 @@ class ApplicationState {
         this._currentActivity.subActivities.add(subActivity);
         break;
       case TimerState.STARTED:
+      case TimerState.DISABLED:
         break;
     }
     _saveProject(_currentProject);

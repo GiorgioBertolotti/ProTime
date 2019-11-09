@@ -5,13 +5,13 @@ import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:pro_time/pages/home/widgets/delete_project_dialog.dart';
 import 'package:pro_time/pages/home/widgets/project_dialog.dart';
+import 'package:pro_time/pages/project/project_page.dart';
 
 class ProjectTile extends StatelessWidget {
   ProjectTile(this.project, this.onDelete);
 
   final Project project;
   final Function onDelete;
-  final Color backgroundColor = Colors.grey[900];
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class ProjectTile extends StatelessWidget {
           child: InkWell(
             onTap: () {
               ProTime.navigatorKey.currentState
-                  .pushNamed("/projects/" + project.id, arguments: project.id);
+                  .pushNamed(ProjectPage.routeName, arguments: project.id);
             },
             borderRadius: BorderRadius.circular(30.0),
             child: Container(
@@ -90,14 +90,14 @@ class ProjectTile extends StatelessWidget {
       actions: <Widget>[
         IconSlideAction(
           caption: 'Edit',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.blue,
           icon: Icons.edit,
           onTap: () => _editProject(context, project),
         ),
         IconSlideAction(
           caption: 'Delete',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteProject(context, project),
@@ -106,14 +106,14 @@ class ProjectTile extends StatelessWidget {
       secondaryActions: <Widget>[
         IconSlideAction(
           caption: 'Delete',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteProject(context, project),
         ),
         IconSlideAction(
           caption: 'Edit',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.blue,
           icon: Icons.edit,
           onTap: () => _editProject(context, project),

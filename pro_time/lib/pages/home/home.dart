@@ -7,12 +7,13 @@ import 'package:pro_time/model/project.dart';
 import 'package:pro_time/pages/home/widgets/bottom_activity_controls.dart';
 import 'package:pro_time/pages/home/widgets/project_dialog.dart';
 import 'package:pro_time/pages/home/widgets/project_tile.dart';
+import 'package:pro_time/pages/settings/settings_page.dart';
 import 'package:pro_time/resources/application_state.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  final Color backgroundColor = Colors.grey[900];
+  static const routeName = "home_page";
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -31,7 +32,6 @@ class _HomePageState extends State<HomePage> {
     ApplicationState appState = Provider.of<ApplicationState>(context);
     return SafeArea(
       child: Scaffold(
-        backgroundColor: widget.backgroundColor,
         floatingActionButton: Padding(
           padding: EdgeInsets.only(
               bottom: (appState.timerState != TimerState.STOPPED) ? 50.0 : 0),
@@ -64,13 +64,23 @@ class _HomePageState extends State<HomePage> {
       Container(
         padding: EdgeInsets.only(left: 20.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "ProTime",
-              style: TextStyle(
-                fontSize: 60.0,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+            Expanded(
+              child: Text(
+                "ProTime",
+                style: TextStyle(
+                  fontSize: 60.0,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 15.0),
+              child: IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(SettingsPage.routeName),
               ),
             ),
           ],
