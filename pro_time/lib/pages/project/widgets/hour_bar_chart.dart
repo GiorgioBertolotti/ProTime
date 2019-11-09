@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/model/project_with_activities.dart';
+import 'package:pro_time/pages/project/widgets/date_range_text.dart';
 import 'package:pro_time/pages/project/widgets/stepper_button.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
 
@@ -19,54 +20,15 @@ class HourBarChart extends StatefulWidget {
 }
 
 class _HourBarChartState extends State<HourBarChart> {
-  int touchedIndex;
-  final barTouchedResultStreamController = StreamController<BarTouchResponse>();
   StreamController<List<Duration>> streamController = StreamController();
-  List<DateTime> dates;
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  double maxHours = 0.0;
+
   @override
   void initState() {
-    getActivitiesForWeek();
-
-    barTouchedResultStreamController.stream
-        .distinct()
-        .listen((BarTouchResponse response) {
-      if (response == null) {
-        return;
-      }
-      if (response.spot == null) {
-        setState(() {
-          touchedIndex = -1;
-        });
-        return;
-      }
-      setState(() {
-        if (response.touchInput is FlLongPressEnd) {
-          touchedIndex = -1;
-        } else {
-          touchedIndex = response.spot.touchedBarGroupIndex;
-        }
-      });
-    });
+    getThisWeeksActivities();
     super.initState();
-  }
-
-  getActivitiesForWeek() async {
-    DateTime date1 = DateTime.now();
-    final List<Future<Duration>> weekHoursFutures = [];
-    for (var i = 6; i >= 0; i--) {
-      final date = date1.subtract(Duration(days: i));
-      print(date.toLocal());
-      weekHoursFutures.add(widget.activitiesService.getDurationForDay(date));
-    }
-    final hours = await Future.wait(weekHoursFutures);
-    streamController.add(hours);
-  }
-
-  @override
-  dispose() {
-    streamController?.close();
-    barTouchedResultStreamController?.close();
-    super.dispose();
   }
 
   @override
@@ -76,24 +38,17 @@ class _HourBarChartState extends State<HourBarChart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            StepperButton(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "nov. 1",
-                  style: TextStyle(color: Colors.white),
-                ),
-                SizedBox(
-                  width: 5.0,
-                ),
-                Text(
-                  "nov. 7",
-                  style: TextStyle(color: Colors.white),
-                )
-              ],
-            )
+            StepperButton(
+              onLeftTap: () => shiftWeekLeft(true),
+              onRightTap: DateTime.now().isAfter(endDate)
+                  ? () => shiftWeekLeft(false)
+                  : null,
+            ),
+            DateRangeText(startDate: startDate, endDate: endDate)
           ],
+        ),
+        SizedBox(
+          height: 10.0,
         ),
         StreamBuilder(
           stream: streamController.stream,
@@ -120,7 +75,7 @@ class _HourBarChartState extends State<HourBarChart> {
           tooltipBgColor: widget.projectWithActivities.mainColor,
           getTooltipItem: (BarChartGroupData groupData, int groupIndex,
               BarChartRodData rodData, int rodIndex) {
-            List days = [
+            List<String> days = [
               'Monday',
               'Tuesday',
               'Wednesday',
@@ -129,9 +84,8 @@ class _HourBarChartState extends State<HourBarChart> {
               'Saturday',
               'Sunday'
             ];
-
             return BarTooltipItem(
-              days[days[groupIndex]],
+              "${days[groupIndex]} \n ${rodData.y}H",
               TextStyle(
                 color: widget.projectWithActivities.textColor,
               ),
@@ -180,38 +134,88 @@ class _HourBarChartState extends State<HourBarChart> {
     );
   }
 
-  List<BarChartGroupData> getBarChartData(List<Duration> hours) {
-    return List.generate(7, (i) {
-      return makeGroupData(i, roundDecimal(hours[i].inSeconds / 60, 1),
-          isTouched: i == 0);
-    });
+  List<BarChartGroupData> getBarChartData(List<Duration> days) {
+    int i = 0;
+    return days.map((h) {
+      final hours = h.inSeconds / 60;
+      if (hours > maxHours) {
+        maxHours = hours;
+      }
+      return makeGroupData(i++, roundDecimal(h.inSeconds / 60, 1));
+    }).toList();
   }
 
-  BarChartGroupData makeGroupData(
-    int x,
-    double y, {
-    bool isTouched = false,
-    Color barColor = Colors.white,
-    double width = 22,
-  }) {
-    // @TODO: calculate max value
-    final maxVal = 10.0;
+  BarChartGroupData makeGroupData(int x, double y) {
     return BarChartGroupData(x: x, barRods: [
       BarChartRodData(
         y: y,
-        color: isTouched ? widget.projectWithActivities.mainColor : barColor,
-        width: width,
+        color: Colors.white,
+        width: 22,
         isRound: true,
         backDrawRodData: BackgroundBarChartRodData(
           show: true,
-          y: maxVal,
+          y: maxHours,
           color: widget.backgroundColor,
         ),
       ),
     ]);
   }
 
-  double roundDecimal(double number, int decimals) {
-    return double.parse(number.toStringAsFixed(decimals));
+  double roundDecimal(double number, int decimals) =>
+      double.parse(number.toStringAsFixed(decimals));
+
+  void getThisWeeksActivities() async {
+    DateTime today = DateTime.now();
+    final List<DateTime> weekDates = [];
+    for (int day = 0; day < 7; day++) {
+      final days = today.weekday - day - 1;
+      weekDates.add(DateTime.now().subtract(Duration(days: days)));
+    }
+
+    setState(() {
+      startDate = weekDates[0];
+      endDate = weekDates[6];
+    });
+
+    final List<Future<Duration>> weekHoursFutures = [];
+    for (int i = 0; i < 7; i++) {
+      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
+          widget.projectWithActivities.project.id, weekDates[i]));
+    }
+    final hours = await Future.wait(weekHoursFutures);
+    streamController.add(hours);
+  }
+
+  void shiftWeekLeft(bool shiftLeft) async {
+    final List<DateTime> weekDates = [];
+    final oldStartDay = startDate;
+    if (shiftLeft) {
+      for (int day = 7; day > 0; day--) {
+        weekDates.add(oldStartDay.subtract(Duration(days: day)));
+      }
+    } else {
+      for (int day = 0; day < 7; day++) {
+        weekDates.add(oldStartDay.add(Duration(days: 7 + day)));
+      }
+    }
+
+    setState(() {
+      startDate = weekDates[0];
+      endDate = weekDates[6];
+    });
+
+    final List<Future<Duration>> weekHoursFutures = [];
+    for (int i = 0; i < 7; i++) {
+      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
+          widget.projectWithActivities.project.id, weekDates[i]));
+    }
+    final hours = await Future.wait(weekHoursFutures);
+    streamController.add(hours);
+  }
+
+  @override
+  dispose() {
+    streamController?.close();
+    super.dispose();
   }
 }

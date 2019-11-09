@@ -21,10 +21,38 @@ class ActivityDao extends DatabaseAccessor<ProtimeDb> with _$ActivityDaoMixin {
             ))
           .get();
 
+  Future<List<Activity>> getActivitiesForDateInProject(
+          int projectId, DateTime date) =>
+      (select(activities)
+            ..where(
+              (a) => and(
+                and(
+                  day(a.startDateTime).equals(date.day),
+                  month(a.startDateTime).equals(date.month),
+                ),
+                and(
+                  year(a.startDateTime).equals(date.year),
+                  a.projectId.equals(projectId),
+                ),
+              ),
+            ))
+          .get();
+
   Future<List<Activity>> getActivitesBetweenDates(
           DateTime date1, DateTime date2) =>
       (select(activities)
             ..where((a) => a.startDateTime.isBetweenValues(date1, date2)))
+          .get();
+
+  Future<List<Activity>> getActivitesBetweenDatesInProject(
+          int projectId, DateTime date1, DateTime date2) =>
+      (select(activities)
+            ..where(
+              (a) => and(
+                a.startDateTime.isBetweenValues(date1, date2),
+                a.projectId.equals(projectId),
+              ),
+            ))
           .get();
 
   Future<List<Activity>> getAllActivitesInProject(projectId) =>
@@ -38,6 +66,7 @@ class ActivityDao extends DatabaseAccessor<ProtimeDb> with _$ActivityDaoMixin {
 
   Future<void> deleteActivity(int activityId) =>
       (delete(activities)..where((a) => a.id.equals(activityId))).go();
+
   Future<void> insertActivity(Activity activity) =>
       into(activities).insert(activity);
 }

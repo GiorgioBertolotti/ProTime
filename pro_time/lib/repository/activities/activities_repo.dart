@@ -9,5 +9,6 @@ abstract class ActivitiesRepo {
   Future<Activity> getActivity(int activityId);
   Future<void> replaceActivity(Activity activity);
   Future<void> addActivity(Activity activity);
-
+  Future<List<Activity>> getActivitiesForDateInProject(int projectId, DateTime date);
+  Future<List<Activity>> getActivitesBetweenDatesInProject(int projectId, DateTime date1, DateTime date2);
 }

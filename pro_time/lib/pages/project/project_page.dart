@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/database/db.dart';
@@ -11,8 +10,6 @@ import 'package:pro_time/pages/project/widgets/hour_bar_chart.dart';
 import 'package:pro_time/pages/project/widgets/notification_toggle.dart';
 import 'package:pro_time/pages/project/widgets/project_timer.dart';
 import 'package:pro_time/pages/project/widgets/time_stats_text.dart';
-import 'package:pro_time/pages/project/widgets/timer_controls.dart';
-import 'package:pro_time/pages/project/widgets/timer_text.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
 import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/services/timer/timer_service.dart';
@@ -159,41 +156,7 @@ class _ProjectPageState extends State<ProjectPage>
                                         color: Colors.white,
                                         size: 30.0,
                                       ),
-                                      onPressed: () {
-                                        double scrollTo;
-                                        double chartHeight =
-                                            (activities.length > 0)
-                                                ? 230.0
-                                                : 0.0;
-                                        if ((MediaQuery.of(context)
-                                                    .padding
-                                                    .top +
-                                                chartHeight +
-                                                (activities.length * 100)) >
-                                            (MediaQuery.of(context)
-                                                    .size
-                                                    .height -
-                                                MediaQuery.of(context)
-                                                    .padding
-                                                    .top)) {
-                                          scrollTo = (MediaQuery.of(context)
-                                                  .size
-                                                  .height -
-                                              MediaQuery.of(context)
-                                                  .padding
-                                                  .top);
-                                        } else {
-                                          scrollTo = MediaQuery.of(context)
-                                                  .padding
-                                                  .top +
-                                              chartHeight +
-                                              (activities.length * 100);
-                                        }
-                                        _controller.animateTo(scrollTo,
-                                            duration: const Duration(
-                                                milliseconds: 500),
-                                            curve: Curves.easeOut);
-                                      },
+                                      onPressed: () => scrollDown(activities),
                                     )
                                   ],
                                 ),
@@ -232,8 +195,6 @@ class _ProjectPageState extends State<ProjectPage>
     );
   }
 
-
-
   Widget _buildDaysChart() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -245,7 +206,6 @@ class _ProjectPageState extends State<ProjectPage>
       ),
     );
   }
-
 
   Widget _buildTotTime() {
     final totalTime = _projectWithActivities.totalHours;
@@ -261,5 +221,24 @@ class _ProjectPageState extends State<ProjectPage>
     final mins = (totalTime.inMinutes % 60).toString() + "m\n";
     final secs = (totalTime.inSeconds % 60).toString() + "s";
     return TimeStatsText(title: "AVG", hrs: hrs, mins: mins, secs: secs);
+  }
+
+  scrollDown(List<Activity> activities) {
+    double scrollTo;
+    double chartHeight = (activities.length > 0) ? 230.0 : 0.0;
+
+    final pageHeight = MediaQuery.of(context).padding.top +
+        chartHeight +
+        (activities.length * 100);
+
+    final windowSizeMinusPaddingTop =
+        MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
+    if (pageHeight > windowSizeMinusPaddingTop) {
+      scrollTo = windowSizeMinusPaddingTop;
+    } else {
+      scrollTo = pageHeight;
+    }
+    _controller.animateTo(scrollTo,
+        duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
   }
 }
