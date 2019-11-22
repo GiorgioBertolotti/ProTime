@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/model/time.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerService {
   TimerState timerState = TimerState.STOPPED;
@@ -15,7 +16,9 @@ class TimerService {
   BehaviorSubject<TimerState> _timerStateSubj =
       BehaviorSubject<TimerState>.seeded(TimerState.STOPPED);
 
-  TimerService() {
+  SharedPreferences storage;
+
+  TimerService(this.storage) {
     Timer.periodic(Duration(milliseconds: 500), (timer) {
       if (stopWatch != null && _timerSubj.value.inSeconds != stopWatch.elapsed.inSeconds) {
         _timerSubj.add(stopWatch?.elapsed);
@@ -48,7 +51,7 @@ class TimerService {
     return activity;
   }
 
-  pauseTimer() {
+  Duration pauseTimer() {
     stopWatch.stop();
     timerState = TimerState.PAUSED;
     _timerStateSubj.add(timerState);

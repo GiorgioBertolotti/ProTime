@@ -110,7 +110,6 @@ class BottomActivityController extends StatelessWidget {
                                   ),
                                 ),
                                 onTap: () {
-                                  //  @TODO: set state
                                   _timerService.pauseTimer();
                                   _cancelNotifications();
                                 },
@@ -157,7 +156,6 @@ class BottomActivityController extends StatelessWidget {
                             ),
                           ),
                           onTap: () {
-                            // @TODO: set state
                             _timerService.stopTimer();
                             _cancelNotifications();
                           },

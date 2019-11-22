@@ -38,11 +38,8 @@ class ActivityDao extends DatabaseAccessor<ProtimeDb> with _$ActivityDaoMixin {
             ))
           .get();
 
-  Future<List<Activity>> getActivitesBetweenDates(
-          DateTime date1, DateTime date2) =>
-      (select(activities)
-            ..where((a) => a.startDateTime.isBetweenValues(date1, date2)))
-          .get();
+  Future<List<Activity>> getActivitesBetweenDates(DateTime date1, DateTime date2) =>
+      (select(activities)..where((a) => a.startDateTime.isBetweenValues(date1, date2))).get();
 
   Future<List<Activity>> getActivitesBetweenDatesInProject(
           int projectId, DateTime date1, DateTime date2) =>

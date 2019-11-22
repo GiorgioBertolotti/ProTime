@@ -9,10 +9,9 @@ import 'package:pro_time/pages/project/project_page.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
 
 class ProjectTile extends StatelessWidget {
-  final Color backgroundColor;
   final Project project;
   final ActivitiesService activitiesService = getIt<ActivitiesService>();
-  ProjectTile(this.backgroundColor, this.project);
+  ProjectTile(this.project);
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +19,9 @@ class ProjectTile extends StatelessWidget {
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
           color: project.mainColor,
           boxShadow: [
             BoxShadow(
@@ -35,9 +34,10 @@ class ProjectTile extends StatelessWidget {
         child: InkWell(
           onTap: () => Navigator.of(context)
               .pushNamed(ProjectPage.routeName, arguments: project.id),
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+            height: 75.0,
+            padding: EdgeInsets.symmetric(horizontal: 30.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -65,14 +65,14 @@ class ProjectTile extends StatelessWidget {
       actions: [
         IconSlideAction(
           caption: 'Edit',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.blue,
           icon: Icons.edit,
           onTap: () => _editProject(context, project),
         ),
         IconSlideAction(
           caption: 'Delete',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteProject(context, project),
@@ -81,14 +81,14 @@ class ProjectTile extends StatelessWidget {
       secondaryActions: [
         IconSlideAction(
           caption: 'Delete',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.red,
           icon: Icons.delete,
           onTap: () => _deleteProject(context, project),
         ),
         IconSlideAction(
           caption: 'Edit',
-          color: backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
           foregroundColor: Colors.blue,
           icon: Icons.edit,
           onTap: () => _editProject(context, project),

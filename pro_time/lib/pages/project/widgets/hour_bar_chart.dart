@@ -5,15 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/model/project_with_activities.dart';
 import 'package:pro_time/pages/project/widgets/date_range_text.dart';
-import 'package:pro_time/pages/project/widgets/stepper_button.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
+import 'package:pro_time/widgets/stepper_button.dart';
 
 class HourBarChart extends StatefulWidget {
   final ProjectWithActivities projectWithActivities;
-  final Color backgroundColor;
   final ActivitiesService activitiesService = getIt<ActivitiesService>();
 
-  HourBarChart(this.projectWithActivities, this.backgroundColor);
+  HourBarChart(this.projectWithActivities);
 
   @override
   _HourBarChartState createState() => _HourBarChartState();
@@ -98,7 +97,7 @@ class _HourBarChartState extends State<HourBarChart> {
         bottomTitles: SideTitles(
             showTitles: true,
             textStyle: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).textTheme.display1.color,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
@@ -137,11 +136,11 @@ class _HourBarChartState extends State<HourBarChart> {
   List<BarChartGroupData> getBarChartData(List<Duration> days) {
     int i = 0;
     return days.map((h) {
-      final hours = h.inSeconds / 60;
+      final hours = h.inSeconds / 3600;
       if (hours > maxHours) {
         maxHours = hours;
       }
-      return makeGroupData(i++, roundDecimal(h.inSeconds / 60, 1));
+      return makeGroupData(i++, roundDecimal(hours, 1));
     }).toList();
   }
 
@@ -149,13 +148,13 @@ class _HourBarChartState extends State<HourBarChart> {
     return BarChartGroupData(x: x, barRods: [
       BarChartRodData(
         y: y,
-        color: Colors.white,
+        color: Theme.of(context).textTheme.headline.color,
         width: 22,
         isRound: true,
         backDrawRodData: BackgroundBarChartRodData(
           show: true,
           y: maxHours,
-          color: widget.backgroundColor,
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
       ),
     ]);

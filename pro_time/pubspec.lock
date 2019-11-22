@@ -135,7 +135,7 @@ packages:
     source: hosted
     version: "3.2.0"
   collection:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: collection
       url: "https://pub.dartlang.org"
@@ -189,7 +189,7 @@ packages:
       name: fl_chart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -381,7 +381,7 @@ packages:
       name: moor_generator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "2.1.0"
   package_config:
     dependency: transitive
     description:
@@ -409,7 +409,7 @@ packages:
       name: path_provider
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.4"
   pedantic:
     dependency: transitive
     description:
@@ -473,6 +473,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.22.6"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.4+3"
   shelf:
     dependency: transitive
     description:
@@ -519,7 +526,7 @@ packages:
       name: sqlparser
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.0+1"
+    version: "0.4.0"
   stack_trace:
     dependency: transitive
     description:

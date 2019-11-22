@@ -2,14 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:pro_time/get_it_setup.dart';
-import 'package:pro_time/pages/home/home.dart';
+import 'package:pro_time/pages/home/home_page.dart';
 import 'package:pro_time/pages/project/project_page.dart';
 import 'package:pro_time/routes.dart';
+import 'package:pro_time/services/theme/theme_service.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
-  setupGetIt();
+  await setupGetIt();
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final initializationSettingsAndroid =
       AndroidInitializationSettings('ic_notification');
@@ -46,11 +47,17 @@ class ProTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: HomePage.routeName,
-      routes: routes,
-      title: 'ProTime',
-      navigatorKey: navigatorKey,
+    return StreamBuilder<Object>(
+      stream: getIt<ThemeService>().theme$,
+      builder: (context, snapshot) {
+        return MaterialApp(
+          initialRoute: HomePage.routeName,
+          routes: routes,
+          theme: snapshot.data,
+          title: 'ProTime',
+          navigatorKey: navigatorKey,
+        );
+      }
     );
   }
 }

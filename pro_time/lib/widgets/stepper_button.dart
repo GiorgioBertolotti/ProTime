@@ -14,7 +14,6 @@ class StepperButton extends StatelessWidget {
           child: IconButton(
             icon: Icon(
               Icons.chevron_left,
-              color: Colors.white,
             ),
             onPressed: onLeftTap,
           ),
@@ -23,7 +22,6 @@ class StepperButton extends StatelessWidget {
         IconButton(
           icon: Icon(
             Icons.chevron_right,
-            color: Colors.white,
           ),
           onPressed: onRightTap,
         ),

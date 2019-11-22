@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class NotificationToggle extends StatelessWidget {
   final Color backgroundColor;
-  final Function onTap;
+  final Function(bool) onTap;
   final notificationEnabled;
 
   NotificationToggle(
@@ -17,12 +17,17 @@ class NotificationToggle extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: notificationEnabled ? Colors.white : Colors.grey[700],
+        color: notificationEnabled ? Colors.white : Theme.of(context).disabledColor,
         boxShadow: [
+          Theme.of(context).brightness == Brightness.dark ? 
           BoxShadow(
-            color: Colors.black26,
+            color: Colors.black12,
             blurRadius: 2.0,
             offset: Offset(0.0, 4.0),
+          ) : BoxShadow(
+            color: Colors.black12,
+            blurRadius: 2.0,
+            offset: Offset(0.0, 2.0),
           )
         ],
       ),
@@ -30,7 +35,7 @@ class NotificationToggle extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(100.0),
-          onTap: () async {},
+          onTap: () => onTap(notificationEnabled),
           child: Container(
             child: Padding(
               padding: const EdgeInsets.all(10.0),

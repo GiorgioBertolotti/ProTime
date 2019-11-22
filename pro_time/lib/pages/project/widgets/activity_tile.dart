@@ -9,8 +9,7 @@ import 'package:pro_time/services/activities/activities_service.dart';
 class ActivityTile extends StatelessWidget {
   final Activity activity;
   final _activitiesService = getIt<ActivitiesService>();
-  final Color backgroundColor;
-  ActivityTile(this.activity, this.backgroundColor);
+  ActivityTile(this.activity);
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +17,27 @@ class ActivityTile extends StatelessWidget {
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        height: 75,
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
           color: Colors.white,
           boxShadow: [
+            Theme.of(context).brightness == Brightness.dark ? 
             BoxShadow(
               color: Colors.black26,
               blurRadius: 2.0,
               offset: Offset(0.0, 4.0),
-            )
+            ) : BoxShadow(
+              color: Colors.black12,
+              blurRadius: 2.0,
+              offset: Offset(0.0, 4.0),
+            ) 
+
           ],
         ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 1.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -70,14 +76,6 @@ class ActivityTile extends StatelessWidget {
   }
 
   Widget _buildActivityDurationText(Activity activity) {
-    // @TODO show runnnig activity
-    /* if (activity.getIncompleteSubActivity() != null) {
-      return Text(
-        "running\nnow",
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.grey[600]),
-      );
-    } */
     Duration totalTime = activity.duration;
     int secondsCounter = totalTime.inSeconds;
     int hours = secondsCounter ~/ 60 ~/ 60;
@@ -128,18 +126,17 @@ class ActivityTile extends StatelessWidget {
 
   List<Widget> _buildActivityActions(BuildContext context, Activity activity,
       {bool secondary = false}) {
-    // @TODO dont show actions for active activity
     final List<Widget> toReturn = [
       IconSlideAction(
         caption: 'Edit',
-        color: backgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.blue,
         icon: Icons.edit,
         onTap: () => _editActivity(context, activity),
       ),
       IconSlideAction(
         caption: 'Delete',
-        color: backgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.red,
         icon: Icons.delete,
         onTap: () => _activitiesService.deleteActivity(activity.id),

@@ -6,6 +6,7 @@ import 'package:pro_time/model/time.dart';
 import 'package:pro_time/pages/home/widgets/bottom_activity_controller.dart';
 import 'package:pro_time/pages/home/widgets/project_dialog.dart';
 import 'package:pro_time/pages/home/widgets/project_tile.dart';
+import 'package:pro_time/pages/settings/settings_page.dart';
 import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/services/timer/timer_service.dart';
 
@@ -30,34 +31,31 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: widget.backgroundColor,
         floatingActionButton: StreamBuilder<TimerState>(
-          stream: widget.timerService.getTimerStateStream(),
-          builder: (context, snapshot) {
-            return Padding(
-              padding: EdgeInsets.only(
-                  bottom: (snapshot.hasData && snapshot.data != TimerState.STOPPED)
-                      ? 50.0
-                      : 0),
-              child: FloatingActionButton(
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (ctx) {
-                      return ProjectDialog();
-                    },
-                  );
-                },
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.add,
-                  size: 44.0,
-                  color: Colors.black,
+            stream: widget.timerService.getTimerStateStream(),
+            builder: (context, snapshot) {
+              return Padding(
+                padding: EdgeInsets.only(
+                    bottom: (snapshot.hasData &&
+                            snapshot.data != TimerState.STOPPED)
+                        ? 50.0
+                        : 0),
+                child: FloatingActionButton(
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      builder: (ctx) => ProjectDialog(),
+                    );
+                  },
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.add,
+                    size: 44.0,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-            );
-          }
-        ),
+              );
+            }),
         body: _buildBody(),
       ),
     );
@@ -69,15 +67,22 @@ class _HomePageState extends State<HomePage> {
       Container(
         padding: EdgeInsets.only(left: 20.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               "ProTime",
               style: TextStyle(
                 fontSize: 60.0,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(right: 15.0),
+              child: IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () => Navigator.of(context).pushNamed(SettingsPage.routeName),
+              ),
+            )
           ],
         ),
       ),
@@ -149,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                           begin: Offset(0, -0.1),
                           end: Offset.zero,
                         ).animate(animation),
-                        child: ProjectTile(widget.backgroundColor, project),
+                        child: ProjectTile(project),
                       ),
                     );
                   },
@@ -178,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                                   : 0));
                     }
                     Project project = projects[index - 1];
-                    return ProjectTile(widget.backgroundColor, project);
+                    return ProjectTile(project);
                   },
                 );
               }
@@ -187,12 +192,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-    /*    for (Project project in projects) {
-      if (project.hasIncompleteActivities()) {
-        appState.setCurrentProject(project);
-      }
-    }
- */
+
     List<Widget> stackChildren = [
       Column(children: columnChildren),
       Align(

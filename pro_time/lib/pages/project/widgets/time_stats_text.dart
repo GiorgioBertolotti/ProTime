@@ -19,7 +19,7 @@ class TimeStatsText extends StatelessWidget {
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Theme.of(context).textTheme.headline.color),
         children: [
           TextSpan(
             text: "$title\n",
@@ -33,21 +33,21 @@ class TimeStatsText extends StatelessWidget {
             text: hrs,
             style: TextStyle(
               fontSize: 40.0,
-              height: 1.2,
+              height: 1.1,
             ),
           ),
           TextSpan(
             text: mins,
             style: TextStyle(
-              fontSize: 20.0,
-              height: 0.9,
+              fontSize: 24.0,
+              height: 0.7,
             ),
           ),
           TextSpan(
             text: secs,
             style: TextStyle(
-              fontSize: 16.0,
-              height: 0.9,
+              fontSize: 13.0,
+              height: 1.1,
             ),
           ),
         ],

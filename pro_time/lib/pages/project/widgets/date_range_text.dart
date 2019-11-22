@@ -19,21 +19,18 @@ class DateRangeText extends StatelessWidget {
       children: [
         Text(
           DateFormat('d.MMM').format(startDate),
-          style: TextStyle(color: Colors.white),
         ),
         SizedBox(
           width: 2.0,
         ),
         Text(
           " - ",
-          style: TextStyle(color: Colors.white),
         ),
         SizedBox(
           width: 2.0,
         ),
         Text(
           DateFormat('d.MMM').format(endDate),
-          style: TextStyle(color: Colors.white),
         )
       ],
     );

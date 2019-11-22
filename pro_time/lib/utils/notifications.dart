@@ -4,7 +4,7 @@ import 'package:pro_time/main.dart';
 
 Future<void> showNotification(Project project) async {
   if (!(project.notificationEnabled ?? true)) return;
-  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  final androidPlatformChannelSpecifics = AndroidNotificationDetails(
     'protime',
     'ProTime',
     'This channel is used by ProTime to send timer reminders.',
@@ -19,8 +19,8 @@ Future<void> showNotification(Project project) async {
     ledOnMs: 1000,
     ledOffMs: 500,
   );
-  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-  var platformChannelSpecifics = NotificationDetails(
+  final iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  final platformChannelSpecifics = NotificationDetails(
       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
   await flutterLocalNotificationsPlugin.show(
     0,

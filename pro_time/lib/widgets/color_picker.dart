@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
-Future openColoPickerDialog(
-  BuildContext context, String title) {
+Future openColorPickerDialog(
+  BuildContext context, String title, Color startColor) {
   var newColor;
   return showDialog(
     context: context,
@@ -11,7 +11,7 @@ Future openColoPickerDialog(
         title: Text(title),
         content: SingleChildScrollView(
           child: ColorPicker(
-            pickerColor: Colors.white,
+            pickerColor: startColor,
             onColorChanged: (color) {
               newColor = color;
             },

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
-import 'package:pro_time/pages/home/widgets/color_picker.dart';
 import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/utils/random_colors.dart';
+import 'package:pro_time/widgets/color_button.dart';
 
 class ProjectDialog extends StatefulWidget {
   final projectsService = getIt<ProjectsService>();
@@ -68,56 +68,35 @@ class _ProjectDialogState extends State<ProjectDialog> {
             },
           ),
           SizedBox(height: 10.0),
-          _colorButton(context, () => _setMainColor(context), "Pick main color",
-              _selectedMainColor),
+          ColorButton(
+            onTap: (Color color) => _setMainColor(color),
+            title: "Pick main color",
+            color: _selectedMainColor,
+          ),
           SizedBox(height: 10.0),
-          _colorButton(context, () => _setTextColor(context), "Pick text color",
-              _selectedTextColor),
+          ColorButton(
+            onTap: (Color color) => _setTextColor(color),
+            title: "Pick text color",
+            color: _selectedTextColor,
+          ),
         ],
       ),
       actions: [
         FlatButton(
+          textColor: Theme.of(context).textTheme.button.color,
           child: Text("Cancel"),
           onPressed: () => Navigator.pop(context),
         ),
         FlatButton(
           textColor: Colors.lightBlue,
           child: Text(_editMode ? "Update" : "Add"),
-          onPressed: !_nameValid
-              ? null
-              : () => _saveOrCreateProject(context),
+          onPressed: !_nameValid ? null : () => _saveOrCreateProject(context),
         ),
       ],
     );
   }
 
-  Container _colorButton(
-      BuildContext context, Function onTap, String title, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(width: 1, color: Colors.grey.withAlpha(100)),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        title: Text(title),
-        trailing: Container(
-          width: 35.0,
-          height: 35.0,
-          child: CircleAvatar(
-            backgroundColor: color,
-            radius: 35.0,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future _setMainColor(BuildContext context) async {
-    final color = await openColoPickerDialog(
-      context,
-      "Main color picker",
-    );
+  Future _setMainColor(Color color) async {
     if (color != null) {
       setState(() {
         _selectedMainColor = color;
@@ -125,12 +104,7 @@ class _ProjectDialogState extends State<ProjectDialog> {
     }
   }
 
-  Future _setTextColor(BuildContext context) async {
-    final color = await openColoPickerDialog(
-      context,
-      "Text color picker",
-    );
-
+  Future _setTextColor(Color color) async {
     if (color != null) {
       setState(() {
         _selectedTextColor = color;

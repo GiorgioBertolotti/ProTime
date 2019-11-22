@@ -23,7 +23,7 @@ class TimerText extends StatelessWidget {
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Theme.of(context).textTheme.headline.color),
         children: [
           hours != 0
               ? TextSpan(
