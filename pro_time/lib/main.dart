@@ -30,7 +30,7 @@ void main() async {
 
   if (details.didNotificationLaunchApp) {
     ProTime.navigatorKey.currentState
-        .pushNamed(ProjectPage.routeName, arguments: details.payload);
+        .pushNamed(ProjectPage.routeName, arguments: int.parse(details.payload));
   }
 }
 
