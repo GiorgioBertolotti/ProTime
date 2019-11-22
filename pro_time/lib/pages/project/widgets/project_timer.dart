@@ -68,7 +68,7 @@ class _ProjectTimerState extends State<ProjectTimer> {
             startCallback: _startTimer,
             pauseCallback: _pauseTimer,
             stopCallback: _stopTimer,
-            state: widget.timerService.activeProjectId == widget.project.id
+            state: (widget.timerService.activeProjectId == widget.project.id || widget.timerService.timerState == TimerState.STOPPED)
                 ? widget.timerService.timerState
                 : TimerState.DISABLED,
             scaffoldKey: widget.scaffoldKey,
