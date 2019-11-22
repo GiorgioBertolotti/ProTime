@@ -162,6 +162,7 @@ class ActivityTile extends StatelessWidget {
             ),
           ),
           NumberPickerColumn(
+
             initValue: toEdit.duration.inMinutes % 60,
             begin: 0,
             end: 60,
@@ -181,21 +182,18 @@ class ActivityTile extends StatelessWidget {
           ),
         ],
       ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Text("Duration"),
       textAlign: TextAlign.left,
       textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
       selectedTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
       columnPadding: const EdgeInsets.all(8.0),
       onConfirm: (Picker picker, List value) async {
-        final newDuration =
-            Duration(hours: value[0], minutes: value[1], seconds: value[2]);
-        Duration();
-        newDuration.inSeconds;
-        _activitiesService
-            .replaceActivity(activity.copyWith(duration: newDuration));
+        final newDuration = Duration(hours: value[0], minutes: value[1], seconds: value[2]);
+        _activitiesService.replaceActivity(activity.copyWith(duration: newDuration));
       },
       confirmTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      cancelTextStyle: const TextStyle(fontSize: 22.0),
+      cancelTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
     );
     picker.showModal(context);
   }
