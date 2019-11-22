@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/model/time.dart';
 import 'package:pro_time/pages/project/widgets/timer_controls.dart';
 import 'package:pro_time/pages/project/widgets/timer_text.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
@@ -34,12 +35,12 @@ class _ProjectTimerState extends State<ProjectTimer> {
         widget.timerService.activeProjectId == widget.project.id) {
       _secondsCounter = widget.timerService.getActiveDuration().inSeconds;
     }
-    _timerSubscription =
-        widget.timerService.getActiveDurationStream().listen((duration) {
-      if (duration.inSeconds != _secondsCounter) {
-        setState(() {
-          _secondsCounter = duration.inSeconds;
-        });
+    _timerSubscription = widget.timerService
+        .getActiveDurationStream()
+        .listen((Duration duration) {
+      if (duration.inSeconds != _secondsCounter &&
+          widget.timerService.activeProjectId == widget.project.id) {
+        setState(() => _secondsCounter = duration.inSeconds);
       }
     });
   }
@@ -67,7 +68,9 @@ class _ProjectTimerState extends State<ProjectTimer> {
             startCallback: _startTimer,
             pauseCallback: _pauseTimer,
             stopCallback: _stopTimer,
-            initialState: widget.timerService.timerState,
+            state: widget.timerService.activeProjectId == widget.project.id
+                ? widget.timerService.timerState
+                : TimerState.DISABLED,
             scaffoldKey: widget.scaffoldKey,
           ),
         )
@@ -93,10 +96,21 @@ class _ProjectTimerState extends State<ProjectTimer> {
   }
 
   _startTimer() {
-    widget.timerService.startTimer(widget.project.id);
-    _timerSubscription?.resume();
-    _stopBlink();
-    showNotification(widget.project);
+    final isPaused = widget.timerService.timerState == TimerState.PAUSED &&
+        widget.timerService.activeProjectId == widget.project.id;
+    if (widget.timerService.timerState == TimerState.STOPPED || isPaused) {
+      widget.timerService.startTimer(widget.project.id);
+      _timerSubscription?.resume();
+      _stopBlink();
+      showNotification(widget.project);
+    } else {
+      widget.scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          content: Text(
+              "You have to stop the current activity before starting another."),
+        ),
+      );
+    }
   }
 
   _pauseTimer() {

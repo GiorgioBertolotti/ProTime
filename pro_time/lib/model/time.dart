@@ -1,1 +1,1 @@
-enum TimerState { STOPPED, STARTED, PAUSED }
+enum TimerState { STOPPED, STARTED, PAUSED, DISABLED }

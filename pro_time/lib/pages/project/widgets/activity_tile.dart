@@ -23,17 +23,17 @@ class ActivityTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.0),
           color: Colors.white,
           boxShadow: [
-            Theme.of(context).brightness == Brightness.dark ? 
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 2.0,
-              offset: Offset(0.0, 4.0),
-            ) : BoxShadow(
-              color: Colors.black12,
-              blurRadius: 2.0,
-              offset: Offset(0.0, 4.0),
-            ) 
-
+            Theme.of(context).brightness == Brightness.dark
+                ? BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  )
+                : BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  )
           ],
         ),
         child: Container(
@@ -150,35 +150,37 @@ class ActivityTile extends StatelessWidget {
 
   _editActivity(BuildContext context, Activity toEdit) {
     Picker picker = Picker(
-      adapter: NumberPickerAdapter(data: [
-        NumberPickerColumn(
-          initValue: toEdit.duration.inHours,
-          begin: 0,
-          end: 999,
-          suffix: Text(
-            "h",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+      adapter: NumberPickerAdapter(
+        data: [
+          NumberPickerColumn(
+            initValue: toEdit.duration.inHours,
+            begin: 0,
+            end: 999,
+            suffix: Text(
+              "h",
+              style: TextStyle(color: Colors.blue, fontSize: 22.0),
+            ),
           ),
-        ),
-        NumberPickerColumn(
-          initValue: toEdit.duration.inMinutes % 60,
-          begin: 0,
-          end: 60,
-          suffix: Text(
-            "m",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+          NumberPickerColumn(
+            initValue: toEdit.duration.inMinutes % 60,
+            begin: 0,
+            end: 60,
+            suffix: Text(
+              "m",
+              style: TextStyle(color: Colors.blue, fontSize: 22.0),
+            ),
           ),
-        ),
-        NumberPickerColumn(
-          initValue: toEdit.duration.inSeconds % 60,
-          begin: 0,
-          end: 60,
-          suffix: Text(
-            "s",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
+          NumberPickerColumn(
+            initValue: toEdit.duration.inSeconds % 60,
+            begin: 0,
+            end: 60,
+            suffix: Text(
+              "s",
+              style: TextStyle(color: Colors.blue, fontSize: 22.0),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
       title: Text("Duration"),
       textAlign: TextAlign.left,
       textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
@@ -193,7 +195,7 @@ class ActivityTile extends StatelessWidget {
             .replaceActivity(activity.copyWith(duration: newDuration));
       },
       confirmTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      cancelTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
+      cancelTextStyle: const TextStyle(fontSize: 22.0),
     );
     picker.showModal(context);
   }

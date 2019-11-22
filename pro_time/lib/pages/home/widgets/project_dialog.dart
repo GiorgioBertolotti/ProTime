@@ -123,10 +123,11 @@ class _ProjectDialogState extends State<ProjectDialog> {
       widget.projectsService.replaceProject(proj);
     } else {
       proj = Project(
+        notificationEnabled: false,
         name: _nameController.text,
         mainColor: _selectedMainColor,
         textColor: _selectedTextColor,
-        created: DateTime.now(),
+        created: DateTime.now(), id: null,
       );
       widget.projectsService.addProject(proj);
     }

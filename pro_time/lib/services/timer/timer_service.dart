@@ -42,6 +42,7 @@ class TimerService {
       projectId: activeProjectId,
       duration: duration,
       startDateTime: startTime,
+      id: null,
     );
     activeProjectId = null;
     timerState = TimerState.STOPPED;
