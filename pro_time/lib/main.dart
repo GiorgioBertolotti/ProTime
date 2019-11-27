@@ -68,7 +68,7 @@ class ProTime extends StatelessWidget {
           value: ApplicationState(),
           child: MaterialApp(
             initialRoute: HomePage.routeName,
-            routes: routes,
+            onGenerateRoute: onGenerateRoutes,
             theme: snapshot.data,
             title: 'ProTime',
             navigatorKey: navigatorKey,
