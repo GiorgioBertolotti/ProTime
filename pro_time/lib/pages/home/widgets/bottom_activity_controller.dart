@@ -6,12 +6,14 @@ import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/main.dart';
 import 'package:pro_time/model/time.dart';
 import 'package:pro_time/pages/project/project_page.dart';
+import 'package:pro_time/services/activities/activities_service.dart';
 import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/services/timer/timer_service.dart';
 
 class BottomActivityController extends StatelessWidget {
   final _timerService = getIt<TimerService>();
   final _projectService = getIt<ProjectsService>();
+  final _activitiesService = getIt<ActivitiesService>();
   @override
   Widget build(BuildContext context) {
     int id = _timerService.activeProjectId;
@@ -156,7 +158,8 @@ class BottomActivityController extends StatelessWidget {
                             ),
                           ),
                           onTap: () {
-                            _timerService.stopTimer();
+                            final activity = _timerService.stopTimer();
+                            _activitiesService.addActivity(activity);
                             _cancelNotifications();
                           },
                         ),

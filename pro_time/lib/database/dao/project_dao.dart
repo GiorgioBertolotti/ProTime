@@ -30,7 +30,6 @@ class ProjectDao extends DatabaseAccessor<ProtimeDb> with _$ProjectDaoMixin {
                 .map((row) => row.readTable(activities))
                 .where((a) => a != null)
                 .toList();
-            print(activityArray);
             return ProjectWithActivities(project, activityArray ?? []);
           });
 }

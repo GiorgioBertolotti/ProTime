@@ -35,4 +35,10 @@ class ActivitiesService {
     final activites = await activitiesRepo.getAllActivitesInProject(projectId);
     return activites.fold<Duration>(Duration(), (Duration prev, Activity current) => prev + current.duration);
   }
+
+  Stream<Duration> getDurationInProjectStream(int projectId) {
+    final activitesStream = activitiesRepo.getAllActivitesInProjectStream(projectId);
+    final durationStream = activitesStream.map<Duration>((List<Activity> activites) => activites.fold<Duration>(Duration(), (Duration prev, Activity current) => prev + current.duration));
+    return durationStream;
+  }
 }

@@ -29,8 +29,6 @@ void main() async {
   runApp(ProTime());
 
   if (details.didNotificationLaunchApp) {
-    print("imeirer here");
-    print("details.payload");
     ProTime.navigatorKey.currentState
         .pushNamed(ProjectPage.routeName, arguments: int.parse(details.payload));
   }
@@ -39,9 +37,10 @@ void main() async {
 Future onSelectNotification(String id) async {
   ProTime.navigatorKey.currentState.pushNamedAndRemoveUntil(
     ProjectPage.routeName,
-    (currentRoute) => currentRoute.settings.name == "home",
+    (currentRoute) => currentRoute.settings.name == HomePage.routeName || currentRoute.settings.name == "",
     arguments: int.parse(id),
   );
+
 }
 
 class ProTime extends StatelessWidget {

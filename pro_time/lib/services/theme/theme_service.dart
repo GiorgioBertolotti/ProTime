@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:rxdart/subjects.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
@@ -21,11 +21,11 @@ class ThemeService {
   BehaviorSubject<ThemeData> themeSubject =
       BehaviorSubject<ThemeData>.seeded(lightTheme);
   Stream<ThemeData> get theme$ => themeSubject.stream;
-  final SharedPreferences storage;
+  final Box storage;
   String activeTheme = "light";
 
   ThemeService(this.storage) {
-    final theme = this.storage.getString("theme") ?? "light";
+    final String theme = this.storage.get("theme", defaultValue: "light");
     if(activeTheme != theme) {
       setTheme(theme);
     }
@@ -39,7 +39,7 @@ class ThemeService {
       themeSubject.add(darkTheme);
     }
 
-    storage.setString("theme", activeTheme);
+    storage.put("theme", activeTheme);
   }
 
 }

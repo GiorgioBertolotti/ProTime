@@ -33,4 +33,6 @@ class ActivitiesDb extends ActivitiesRepo {
   @override
   Future<void> addActivity(Activity activity) => protimeDb.activityDao.insertActivity(activity);
 
+  @override
+  Stream<List<Activity>> getAllActivitesInProjectStream(int activityId) => protimeDb.activityDao.getAllActivitesInProjectStream(activityId);
 }

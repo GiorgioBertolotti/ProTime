@@ -100,8 +100,8 @@ class ProjectTile extends StatelessWidget {
   Container buildHourCounter() {
     return Container(
       margin: const EdgeInsets.only(top: 5.0),
-      child: FutureBuilder(
-          future: activitiesService.getDurationInProject(project.id),
+      child: StreamBuilder(
+          stream: activitiesService.getDurationInProjectStream(project.id),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasError || !snapshot.hasData) {
               return CircularProgressIndicator();

@@ -54,6 +54,9 @@ class ActivityDao extends DatabaseAccessor<ProtimeDb> with _$ActivityDaoMixin {
 
   Future<List<Activity>> getAllActivitesInProject(projectId) =>
       (select(activities)..where((a) => a.projectId.equals(projectId))).get();
+  
+  Stream<List<Activity>> getAllActivitesInProjectStream(projectId) =>
+      (select(activities)..where((a) => a.projectId.equals(projectId))).watch();
 
   Future<void> replaceActivity(Activity activity) =>
       update(activities).replace(activity);

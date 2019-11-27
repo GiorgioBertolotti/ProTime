@@ -11,7 +11,7 @@ part 'db.g.dart';
 
 @UseMoor(tables: [Projects, Activities], daos: [ProjectDao, ActivityDao])
 class ProtimeDb extends _$ProtimeDb {
-  ProtimeDb() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'db2.sqlite'));
+  ProtimeDb() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'protime.sqlite'));
 
   @override
   int get schemaVersion => 1;

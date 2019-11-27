@@ -43,7 +43,7 @@ class _ProjectPageState extends State<ProjectPage>
             stream: widget.projectsService.watchProjectWithActivites(projectId),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasError || !snapshot.hasData) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
               _projectWithActivities = snapshot.data;
               _project = _projectWithActivities.project;

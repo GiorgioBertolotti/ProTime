@@ -22,7 +22,8 @@ dependencies:
   flutter_local_notifications: ^0.8.4
   get_it: ^3.0.3
   rxdart: ^0.22.6
-  shared_preferences: ^0.5.4+3
+  hive: ^1.1.1
+  hive_flutter: ^0.2.1
 
 dev_dependencies:
   flutter_test:
