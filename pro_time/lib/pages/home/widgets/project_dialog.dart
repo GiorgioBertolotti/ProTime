@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
 import 'package:hive/hive.dart';
-import 'package:pro_time/widgets/color_button.dart';
+import 'package:pro_time/pages/home/widgets/color_button.dart';
 
 class ProjectDialog extends StatefulWidget {
   ProjectDialog({this.projectToEdit});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_time/widgets/color_picker.dart';
+import 'package:pro_time/pages/home/widgets/color_picker.dart';
 
 class ColorButton extends StatelessWidget {
   const ColorButton({
@@ -22,7 +22,14 @@ class ColorButton extends StatelessWidget {
       ),
       child: ListTile(
         onTap: () async {
-          Color newColor = await openColorPickerDialog(context, title, color);
+          var newColor = await showDialog(
+            context: context,
+            builder: (ctx) {
+              return ColorDialog(
+                initialColor: color,
+              );
+            },
+          );
           if (newColor != null) {
             onTap(newColor);
           }
