@@ -89,7 +89,7 @@ class _ProjectDialogState extends State<ProjectDialog> {
           },
         ),
         FlatButton(
-          textColor: Colors.lightBlue,
+          textColor: Theme.of(context).textTheme.button.color,
           child: Text(_editMode ? "Update" : "Add"),
           onPressed: !_nameValid ? null : () => _saveOrCreateProject(context),
         ),

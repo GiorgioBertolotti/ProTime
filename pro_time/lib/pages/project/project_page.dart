@@ -94,7 +94,7 @@ class _ProjectPageState extends State<ProjectPage> {
                           _buildAvgTime(),
                         ],
                       ),
-                      SizedBox(height: 80.0),
+                      SizedBox(height: 50.0),
                       ProjectTimer(
                         _project,
                         _scaffoldKey,
@@ -105,7 +105,7 @@ class _ProjectPageState extends State<ProjectPage> {
                     ],
                   ),
                   Positioned(
-                    bottom: 50.0,
+                    bottom: 60.0,
                     left: 30.0,
                     child: Container(
                       decoration: BoxDecoration(
@@ -114,11 +114,17 @@ class _ProjectPageState extends State<ProjectPage> {
                             ? Colors.white
                             : Colors.grey[700],
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 2.0,
-                            offset: Offset(0.0, 4.0),
-                          )
+                          Theme.of(context).brightness == Brightness.dark
+                              ? BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 2.0,
+                                  offset: Offset(0.0, 4.0),
+                                )
+                              : BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 2.0,
+                                  offset: Offset(0.0, 4.0),
+                                ),
                         ],
                       ),
                       child: Material(
@@ -162,7 +168,7 @@ class _ProjectPageState extends State<ProjectPage> {
                   (_project.activities != null &&
                           _project.activities.length > 0)
                       ? Positioned(
-                          bottom: 20.0,
+                          bottom: 30.0,
                           left: 0.0,
                           right: 0.0,
                           child: Column(
@@ -213,8 +219,14 @@ class _ProjectPageState extends State<ProjectPage> {
                 return ActivityTile(
                   activity,
                   _project,
-                  editCallback: () => setState(() {}),
-                  deleteCallback: () => setState(() {}),
+                  editCallback: () {
+                    _updateProject();
+                    setState(() {});
+                  },
+                  deleteCallback: () {
+                    _updateProject();
+                    setState(() {});
+                  },
                 );
               },
             ),

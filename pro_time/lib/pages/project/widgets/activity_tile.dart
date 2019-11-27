@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_time/model/project.dart';
+import 'package:pro_time/pages/project/widgets/edit_dialog.dart';
 
 class ActivityTile extends StatefulWidget {
   ActivityTile(this.activity, this.project,
@@ -25,20 +25,27 @@ class _ActivityTileState extends State<ActivityTile> {
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        height: 75.0,
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
           color: Colors.white,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 2.0,
-              offset: Offset(0.0, 4.0),
-            )
+            Theme.of(context).brightness == Brightness.dark
+                ? BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  )
+                : BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  ),
           ],
         ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 1.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -161,51 +168,17 @@ class _ActivityTileState extends State<ActivityTile> {
   }
 
   _editActivity(Activity toEdit) async {
-    Picker picker = Picker(
-      adapter: NumberPickerAdapter(data: [
-        NumberPickerColumn(
-          initValue: toEdit.getDuration().inHours,
-          begin: 0,
-          end: 999,
-          suffix: Text(
-            "h",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
-          ),
-        ),
-        NumberPickerColumn(
-          initValue: toEdit.getDuration().inMinutes % 60,
-          begin: 0,
-          end: 60,
-          suffix: Text(
-            "m",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
-          ),
-        ),
-        NumberPickerColumn(
-          initValue: toEdit.getDuration().inSeconds % 60,
-          begin: 0,
-          end: 60,
-          suffix: Text(
-            "s",
-            style: TextStyle(color: Colors.blue, fontSize: 22.0),
-          ),
-        ),
-      ]),
-      title: Text("Duration"),
-      textAlign: TextAlign.left,
-      textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      selectedTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      columnPadding: const EdgeInsets.all(8.0),
-      onConfirm: (Picker picker, List value) async {
-        toEdit.setDuration(
-            Duration(hours: value[0], minutes: value[1], seconds: value[2]));
-        await Hive.box("projects").put(widget.project.id, widget.project);
-        setState(() {});
+    var edited = await showDialog(
+      context: context,
+      builder: (ctx) {
+        return EditActivityDialog(toEdit, widget.project);
       },
-      confirmTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      cancelTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
     );
-    await picker.showModal(context);
+    if (edited != null) {
+      widget.project.activities.remove(toEdit);
+      widget.project.activities.add(edited);
+      await Hive.box("projects").put(widget.project.id, widget.project);
+    }
     if (widget.editCallback != null) widget.editCallback();
   }
 

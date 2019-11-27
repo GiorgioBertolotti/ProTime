@@ -71,11 +71,17 @@ class _TimerControlsState extends State<TimerControls> {
       decoration: BoxDecoration(
         color: color,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),
@@ -122,11 +128,17 @@ class _TimerControlsState extends State<TimerControls> {
       decoration: BoxDecoration(
         color: Color(0xFFFF3D00),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),
@@ -173,11 +185,17 @@ class _TimerControlsState extends State<TimerControls> {
       decoration: BoxDecoration(
         color: Color(0xFFFFEB3B),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),

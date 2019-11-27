@@ -18,7 +18,7 @@ class DeleteProjectDialog extends StatelessWidget {
       title: Text("Delete " + project.name + "?"),
       actions: <Widget>[
         FlatButton(
-          textColor: Colors.lightBlue,
+          textColor: Theme.of(context).textTheme.button.color,
           child: Text("Cancel"),
           onPressed: () {
             ProTime.navigatorKey.currentState.pop();

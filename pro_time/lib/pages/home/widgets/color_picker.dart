@@ -71,7 +71,7 @@ class _ColorDialogState extends State<ColorDialog> {
                     margin: EdgeInsets.all(3.0),
                     decoration: BoxDecoration(
                         color: _customColor == _selectedColor
-                            ? Colors.lightBlue
+                            ? Theme.of(context).textTheme.button.color
                             : Colors.grey.withAlpha(100),
                         shape: BoxShape.circle),
                     child: Padding(
@@ -104,7 +104,7 @@ class _ColorDialogState extends State<ColorDialog> {
                     decoration: BoxDecoration(
                         color:
                             (color == _selectedColor && _customColor != color)
-                                ? Colors.lightBlue
+                                ? Theme.of(context).textTheme.button.color
                                 : Colors.grey.withAlpha(100),
                         shape: BoxShape.circle),
                     child: Padding(
@@ -130,7 +130,7 @@ class _ColorDialogState extends State<ColorDialog> {
           },
         ),
         FlatButton(
-          textColor: Colors.lightBlue,
+          textColor: Theme.of(context).textTheme.button.color,
           child: Text("Confirm"),
           onPressed: () {
             ProTime.navigatorKey.currentState.pop(_selectedColor);
@@ -164,7 +164,7 @@ class _ColorDialogState extends State<ColorDialog> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             FlatButton(
-                textColor: Colors.lightBlue,
+                textColor: Theme.of(context).textTheme.button.color,
                 child: Text("Select"),
                 onPressed: () => Navigator.of(context).pop(newColor)),
           ],

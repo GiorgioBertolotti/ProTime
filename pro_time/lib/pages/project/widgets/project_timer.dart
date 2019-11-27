@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:pro_time/main.dart';
 import 'package:pro_time/model/project.dart';
+import 'package:pro_time/pages/project/widgets/controls.dart';
 import 'package:pro_time/pages/project/widgets/timer_text.dart';
 import 'package:pro_time/resources/application_state.dart';
-import 'package:pro_time/resources/controls.dart';
 import 'package:provider/provider.dart';
 
 class ProjectTimer extends StatefulWidget {
@@ -115,8 +114,8 @@ class _ProjectTimerState extends State<ProjectTimer>
     );
   }
 
-  _updateProject() {
-    _project = Hive.box("projects").get(_project.id);
+  _updateProject() async {
+    _project = await Hive.box("projects").get(_project.id);
   }
 
   _startTimer() {

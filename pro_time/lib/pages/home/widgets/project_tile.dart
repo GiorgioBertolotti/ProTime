@@ -22,16 +22,22 @@ class ProjectTile extends StatelessWidget {
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(20.0),
           color: project.mainColor,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 2.0,
-              offset: Offset(0.0, 4.0),
-            )
+            Theme.of(context).brightness == Brightness.dark
+                ? BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  )
+                : BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 2.0,
+                    offset: Offset(0.0, 4.0),
+                  ),
           ],
         ),
         child: Material(
@@ -41,9 +47,10 @@ class ProjectTile extends StatelessWidget {
               ProTime.navigatorKey.currentState
                   .pushNamed(ProjectPage.routeName, arguments: project.id);
             },
-            borderRadius: BorderRadius.circular(30.0),
+            borderRadius: BorderRadius.circular(20.0),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+              height: 75.0,
+              padding: EdgeInsets.symmetric(horizontal: 30.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,

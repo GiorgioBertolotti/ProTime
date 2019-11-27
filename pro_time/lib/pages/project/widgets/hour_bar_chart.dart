@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/model/project.dart';
@@ -15,14 +14,13 @@ class HourBarChart extends StatefulWidget {
 }
 
 class _HourBarChartState extends State<HourBarChart> {
-  StreamController<List<Duration>> streamController = StreamController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   double maxHours = 0.0;
 
   @override
   void initState() {
-    getThisWeeksActivities();
+    setWeek();
     super.initState();
   }
 
@@ -34,9 +32,13 @@ class _HourBarChartState extends State<HourBarChart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             StepperButton(
-              onLeftTap: () => shiftWeekLeft(true),
+              onLeftTap: () => setState(() {
+                shiftWeekLeft(true);
+              }),
               onRightTap: DateTime.now().isAfter(endDate)
-                  ? () => shiftWeekLeft(false)
+                  ? () => setState(() {
+                        shiftWeekLeft(false);
+                      })
                   : null,
             ),
             DateRangeText(startDate: startDate, endDate: endDate)
@@ -45,19 +47,10 @@ class _HourBarChartState extends State<HourBarChart> {
         SizedBox(
           height: 10.0,
         ),
-        StreamBuilder(
-          stream: streamController.stream,
-          builder: (context, snapshot) {
-            if (snapshot.hasError || !snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final barChartData = getBarChartData(snapshot.data);
-            return Expanded(
-              child: BarChart(
-                mainBarData(barChartData),
-              ),
-            );
-          },
+        Expanded(
+          child: BarChart(
+            mainBarData(getBarChartData(getWeekActivities())),
+          ),
         ),
       ],
     );
@@ -159,17 +152,9 @@ class _HourBarChartState extends State<HourBarChart> {
   double roundDecimal(double number, int decimals) =>
       double.parse(number.toStringAsFixed(decimals));
 
-  void getThisWeeksActivities() async {
-    DateTime today = DateTime.now();
-    final List<DateTime> weekDates = [];
-    for (int day = 0; day < 7; day++) {
-      final days = today.weekday - day - 1;
-      weekDates.add(DateTime.now().subtract(Duration(days: days)));
-    }
-    setState(() {
-      startDate = weekDates[0];
-      endDate = weekDates[6];
-    });
+  List<DateTime> weekDates = [];
+
+  List<Duration> getWeekActivities() {
     final List<Duration> hours = [];
     for (int i = 0; i < 7; i++) {
       hours.add(Duration(seconds: 0));
@@ -179,18 +164,23 @@ class _HourBarChartState extends State<HourBarChart> {
         }
       }
     }
-    streamController.add(hours);
+    return hours;
   }
 
-  bool isSameDay(DateTime one, DateTime two) {
-    return (one.day == two.day &&
-        one.month == two.month &&
-        one.year == two.year);
+  setWeek() {
+    DateTime today = DateTime.now();
+    weekDates.clear();
+    for (int day = 0; day < 7; day++) {
+      final days = today.weekday - day - 1;
+      weekDates.add(DateTime.now().subtract(Duration(days: days)));
+    }
+    startDate = weekDates[0];
+    endDate = weekDates[6];
   }
 
-  void shiftWeekLeft(bool shiftLeft) async {
-    final List<DateTime> weekDates = [];
+  shiftWeekLeft(bool shiftLeft) {
     final oldStartDay = startDate;
+    weekDates.clear();
     if (shiftLeft) {
       for (int day = 7; day > 0; day--) {
         weekDates.add(oldStartDay.subtract(Duration(days: day)));
@@ -200,25 +190,13 @@ class _HourBarChartState extends State<HourBarChart> {
         weekDates.add(oldStartDay.add(Duration(days: 7 + day)));
       }
     }
-    setState(() {
-      startDate = weekDates[0];
-      endDate = weekDates[6];
-    });
-    final List<Duration> hours = [];
-    for (int i = 0; i < 7; i++) {
-      hours.add(Duration(seconds: 0));
-      for (Activity activity in widget.project.activities) {
-        if (isSameDay(weekDates[i], activity.getFirstStarted())) {
-          hours[i] = hours[i] + activity.getDuration();
-        }
-      }
-    }
-    streamController.add(hours);
+    startDate = weekDates[0];
+    endDate = weekDates[6];
   }
 
-  @override
-  dispose() {
-    streamController?.close();
-    super.dispose();
+  bool isSameDay(DateTime one, DateTime two) {
+    return (one.day == two.day &&
+        one.month == two.month &&
+        one.year == two.year);
   }
 }
