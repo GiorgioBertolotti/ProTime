@@ -18,7 +18,7 @@ dependencies:
   flutter_slidable: ^0.5.4
   auto_size_text: ^2.1.0
   flutter_picker: ^1.1.0
-  fl_chart: ^0.4.2
+  fl_chart: ^0.5.1
   flutter_local_notifications: ^0.8.4
   get_it: ^3.0.3
   rxdart: ^0.22.6
