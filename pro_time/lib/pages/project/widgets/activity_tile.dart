@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_time/database/db.dart';
-import 'package:pro_time/get_it_setup.dart';
-import 'package:pro_time/services/activities/activities_service.dart';
 
 class ActivityTile extends StatelessWidget {
   ActivityTile(this.activity, this.onEdit, this.onDelete);
@@ -11,7 +9,6 @@ class ActivityTile extends StatelessWidget {
   final Activity activity;
   final Function onEdit;
   final Function onDelete;
-  final _activitiesService = getIt<ActivitiesService>();
 
   @override
   Widget build(BuildContext context) {
