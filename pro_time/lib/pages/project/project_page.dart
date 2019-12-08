@@ -5,6 +5,7 @@ import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/model/project_with_activities.dart';
 import 'package:pro_time/model/time.dart';
 import 'package:pro_time/pages/project/widgets/activity_tile.dart';
+import 'package:pro_time/pages/project/widgets/edit_dialog.dart';
 import 'package:pro_time/pages/project/widgets/hour_bar_chart.dart';
 import 'package:pro_time/pages/project/widgets/notification_toggle.dart';
 import 'package:pro_time/pages/project/widgets/project_timer.dart';
@@ -54,7 +55,9 @@ class _ProjectPageState extends State<ProjectPage>
                 shrinkWrap: true,
                 children: [
                   Container(
-                    height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - 20,
+                    height: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        20,
                     child: Stack(
                       children: [
                         Column(
@@ -78,16 +81,18 @@ class _ProjectPageState extends State<ProjectPage>
                           ],
                         ),
                         Positioned(
-                          bottom: 110.0,
+                          bottom: 90.0,
                           left: 30.0,
                           child: NotificationToggle(
                             backgroundColor: _project.mainColor,
                             notificationEnabled: _project.notificationEnabled,
-                            onTap: (bool value) {
+                            onTap: (bool newValue) {
+                              _project = _project.copyWith(
+                                  notificationEnabled: newValue);
                               widget.projectsService.replaceProject(
-                                _project.copyWith(notificationEnabled: !value),
+                                _project,
                               );
-                              if (!value) {
+                              if (!newValue) {
                                 cancelNotifications();
                               } else if (widget.timerService.timerState ==
                                   TimerState.STARTED) {
@@ -109,12 +114,16 @@ class _ProjectPageState extends State<ProjectPage>
                                         fontSize: 30.0,
                                       ),
                                     ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.keyboard_arrow_down,
-                                        size: 30.0,
+                                    Tooltip(
+                                      message: "Show details",
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_down,
+                                          size: 30.0,
+                                        ),
+                                        onPressed: () =>
+                                            _scrollDown(activities),
                                       ),
-                                      onPressed: () => scrollDown(activities),
                                     )
                                   ],
                                 ),
@@ -145,7 +154,12 @@ class _ProjectPageState extends State<ProjectPage>
                     itemCount: activities.length,
                     itemBuilder: (BuildContext context, int index) {
                       Activity activity = activities.reversed.toList()[index];
-                      return ActivityTile(activity);
+                      return ActivityTile(
+                        activity,
+                        () => _editActivity(activity),
+                        () => widget.activitiesService
+                            .deleteActivity(activity.id),
+                      );
                     },
                   ),
                 ],
@@ -153,6 +167,14 @@ class _ProjectPageState extends State<ProjectPage>
             }),
       ),
     );
+  }
+
+  void _editActivity(Activity toEdit) async {
+    Activity edited = await showDialog(
+        context: context, builder: (ctx) => EditActivityDialog(toEdit));
+    if (edited != null) {
+      widget.activitiesService.replaceActivity(edited);
+    }
   }
 
   Container buildHeader(BuildContext context) {
@@ -207,7 +229,9 @@ class _ProjectPageState extends State<ProjectPage>
   Widget _buildAvgTime() {
     final totalTime = _projectWithActivities.totalHours;
     final numActivties = _projectWithActivities.activities.length;
-    final avgTimeInSeconds = numActivties > 0 ? (totalTime.inSeconds ~/ _projectWithActivities.activities.length) : 0;
+    final avgTimeInSeconds = numActivties > 0
+        ? (totalTime.inSeconds ~/ _projectWithActivities.activities.length)
+        : 0;
     final avgTime = Duration(seconds: avgTimeInSeconds);
     final hrs = avgTime.inHours.toString() + "H\n";
     final mins = (avgTime.inMinutes % 60).toString() + "m\n";
@@ -215,9 +239,10 @@ class _ProjectPageState extends State<ProjectPage>
     return TimeStatsText(title: "AVG", hrs: hrs, mins: mins, secs: secs);
   }
 
-  void scrollDown(List<Activity> activities) {
+  void _scrollDown(List<Activity> activities) {
     double scrollTo;
-    double chartHeight = (activities.length > 0) ? 230.0 : 0.0;
+    double chartHeight =
+        (activities != null && activities.length > 0) ? 240.0 : 0.0;
 
     final pageHeight = MediaQuery.of(context).padding.top +
         chartHeight +
@@ -230,6 +255,7 @@ class _ProjectPageState extends State<ProjectPage>
     } else {
       scrollTo = pageHeight;
     }
-    _controller.animateTo(scrollTo, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+    _controller.animateTo(scrollTo,
+        duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
   }
 }

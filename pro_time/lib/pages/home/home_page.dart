@@ -80,7 +80,8 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.only(right: 15.0),
               child: IconButton(
                 icon: Icon(Icons.settings),
-                onPressed: () => Navigator.of(context).pushNamed(SettingsPage.routeName),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(SettingsPage.routeName),
               ),
             )
           ],
@@ -112,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                   },
                   child: Text(
                     "ADD A PROJECT",
-                    style: TextStyle(color: Colors.white, fontSize: 30.0),
+                    style: TextStyle(fontSize: 30.0),
                   ),
                 ),
               );

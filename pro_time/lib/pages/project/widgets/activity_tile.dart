@@ -3,13 +3,15 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
-import 'package:pro_time/pages/project/widgets/edit_dialog.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
 
 class ActivityTile extends StatelessWidget {
+  ActivityTile(this.activity, this.onEdit, this.onDelete);
+
   final Activity activity;
+  final Function onEdit;
+  final Function onDelete;
   final _activitiesService = getIt<ActivitiesService>();
-  ActivityTile(this.activity);
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +72,7 @@ class ActivityTile extends StatelessWidget {
         ),
       ),
       actions: _buildActivityActions(context),
-      secondaryActions:
-          _buildActivityActions(context, secondary: true),
+      secondaryActions: _buildActivityActions(context, secondary: true),
     );
   }
 
@@ -132,27 +133,19 @@ class ActivityTile extends StatelessWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.blue,
         icon: Icons.edit,
-        onTap: () => _editActivity(context, activity),
+        onTap: onEdit,
       ),
       IconSlideAction(
         caption: 'Delete',
         color: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.red,
         icon: Icons.delete,
-        onTap: () => _activitiesService.deleteActivity(activity.id),
+        onTap: onDelete,
       ),
     ];
     if (secondary)
       return toReturn.reversed.toList();
     else
       return toReturn;
-  }
-
-  void _editActivity(BuildContext context, Activity toEdit) async {
-    Activity edited = await showDialog(
-        context: context, builder: (ctx) => EditActivityDialog(toEdit));
-    if (edited != null) {
-      _activitiesService.replaceActivity(edited);
-    }
   }
 }

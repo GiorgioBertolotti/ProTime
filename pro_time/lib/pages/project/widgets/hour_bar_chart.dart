@@ -19,14 +19,13 @@ class HourBarChart extends StatefulWidget {
 }
 
 class _HourBarChartState extends State<HourBarChart> {
-  StreamController<List<Duration>> streamController = StreamController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   double maxHours = 0.0;
 
   @override
   void initState() {
-    getThisWeeksActivities();
+    setWeek();
     super.initState();
   }
 
@@ -49,16 +48,16 @@ class _HourBarChartState extends State<HourBarChart> {
         SizedBox(
           height: 10.0,
         ),
-        StreamBuilder(
-          stream: streamController.stream,
-          builder: (context, snapshot) {
+        FutureBuilder(
+          initialData: null,
+          future: getWeekActivities(),
+          builder: (ctx, snapshot) {
             if (snapshot.hasError || !snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
             }
-            final barChartData = getBarChartData(snapshot.data);
             return Expanded(
               child: BarChart(
-                mainBarData(barChartData),
+                mainBarData(getBarChartData(snapshot.data)),
               ),
             );
           },
@@ -134,6 +133,7 @@ class _HourBarChartState extends State<HourBarChart> {
   }
 
   List<BarChartGroupData> getBarChartData(List<Duration> days) {
+    maxHours = 0.0;
     int i = 0;
     return days.map((h) {
       final hours = h.inSeconds / 3600;
@@ -163,31 +163,33 @@ class _HourBarChartState extends State<HourBarChart> {
   double roundDecimal(double number, int decimals) =>
       double.parse(number.toStringAsFixed(decimals));
 
-  void getThisWeeksActivities() async {
-    DateTime today = DateTime.now();
-    final List<DateTime> weekDates = [];
-    for (int day = 0; day < 7; day++) {
-      final days = today.weekday - day - 1;
-      weekDates.add(DateTime.now().subtract(Duration(days: days)));
-    }
+  List<DateTime> weekDates = [];
 
-    setState(() {
-      startDate = weekDates[0];
-      endDate = weekDates[6];
-    });
-
+  Future<List<Duration>> getWeekActivities() async {
     final List<Future<Duration>> weekHoursFutures = [];
     for (int i = 0; i < 7; i++) {
       weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
           widget.projectWithActivities.project.id, weekDates[i]));
     }
     final hours = await Future.wait(weekHoursFutures);
-    streamController.add(hours);
+    return hours;
   }
 
-  void shiftWeekLeft(bool shiftLeft) async {
-    final List<DateTime> weekDates = [];
+  setWeek() {
+    DateTime today = DateTime.now();
+    weekDates.clear();
+    for (int day = 0; day < 7; day++) {
+      final days = today.weekday - day - 1;
+      weekDates.add(DateTime.now().subtract(Duration(days: days)));
+    }
+    startDate = weekDates[0];
+    endDate = DateTime(
+        weekDates[6].year, weekDates[6].month, weekDates[6].day, 23, 59);
+  }
+
+  shiftWeekLeft(bool shiftLeft) {
     final oldStartDay = startDate;
+    weekDates.clear();
     if (shiftLeft) {
       for (int day = 7; day > 0; day--) {
         weekDates.add(oldStartDay.subtract(Duration(days: day)));
@@ -197,24 +199,9 @@ class _HourBarChartState extends State<HourBarChart> {
         weekDates.add(oldStartDay.add(Duration(days: 7 + day)));
       }
     }
-
-    setState(() {
-      startDate = weekDates[0];
-      endDate = weekDates[6];
-    });
-
-    final List<Future<Duration>> weekHoursFutures = [];
-    for (int i = 0; i < 7; i++) {
-      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
-          widget.projectWithActivities.project.id, weekDates[i]));
-    }
-    final hours = await Future.wait(weekHoursFutures);
-    streamController.add(hours);
-  }
-
-  @override
-  dispose() {
-    streamController?.close();
-    super.dispose();
+    startDate = weekDates[0];
+    endDate = DateTime(
+        weekDates[6].year, weekDates[6].month, weekDates[6].day, 23, 59);
+    setState(() {});
   }
 }
