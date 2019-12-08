@@ -11,6 +11,7 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
   await setupGetIt();
+
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final initializationSettingsAndroid =
       AndroidInitializationSettings('ic_notification');
@@ -53,7 +54,7 @@ class ProTime extends StatelessWidget {
       builder: (context, snapshot) {
         return MaterialApp(
           initialRoute: HomePage.routeName,
-          routes: routes,
+          onGenerateRoute: onGenerateRoutes,
           theme: snapshot.data,
           title: 'ProTime',
           navigatorKey: navigatorKey,

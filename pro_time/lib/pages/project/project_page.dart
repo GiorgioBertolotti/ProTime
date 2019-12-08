@@ -79,7 +79,7 @@ class _ProjectPageState extends State<ProjectPage>
                         ),
                         Positioned(
                           bottom: 110.0,
-                          left: 30.0,
+                          left: 60.0,
                           child: NotificationToggle(
                             backgroundColor: _project.mainColor,
                             notificationEnabled: _project.notificationEnabled,

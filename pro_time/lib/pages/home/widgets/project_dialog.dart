@@ -1,9 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/services/projects/projects_service.dart';
-import 'package:pro_time/utils/random_colors.dart';
-import 'package:pro_time/widgets/color_button.dart';
+import 'package:pro_time/pages/home/widgets/color_button.dart';
 
 class ProjectDialog extends StatefulWidget {
   final projectsService = getIt<ProjectsService>();
@@ -26,7 +27,7 @@ class _ProjectDialogState extends State<ProjectDialog> {
   void initState() {
     if (widget.projectToEdit == null) {
       _editMode = false;
-      List randomColors = pickRandomColors();
+      List randomColors = _pickRandomColors();
       _selectedMainColor = randomColors[0];
       _selectedTextColor = randomColors[1];
     } else {
@@ -83,12 +84,12 @@ class _ProjectDialogState extends State<ProjectDialog> {
       ),
       actions: [
         FlatButton(
-          textColor: Theme.of(context).textTheme.button.color,
+          textColor: Colors.deepOrange,
           child: Text("Cancel"),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         FlatButton(
-          textColor: Colors.lightBlue,
+          textColor: Theme.of(context).textTheme.button.color,
           child: Text(_editMode ? "Update" : "Add"),
           onPressed: !_nameValid ? null : () => _saveOrCreateProject(context),
         ),
@@ -110,6 +111,38 @@ class _ProjectDialogState extends State<ProjectDialog> {
         _selectedTextColor = color;
       });
     }
+  }
+
+
+  List<Color> _pickRandomColors() {
+    List<Color> colors = List(2);
+    Random random = Random();
+    int posBright = random.nextInt(2);
+    print(posBright);
+    if (posBright == 1) {
+      colors[0] = _pickDarkColor();
+      colors[1] = _pickBrightColor();
+    } else {
+      colors[0] = _pickBrightColor();
+      colors[1] = _pickDarkColor();
+    }
+    return colors;
+  }
+
+  Color _pickDarkColor() {
+    Random random = Random();
+    int red = random.nextInt(128);
+    int green = random.nextInt(128);
+    int blue = random.nextInt(128);
+    return Color.fromRGBO(red, green, blue, 1.0);
+  }
+
+  Color _pickBrightColor() {
+    Random random = Random();
+    int red = 128 + random.nextInt(128);
+    int green = 128 + random.nextInt(128);
+    int blue = 128 + random.nextInt(128);
+    return Color.fromRGBO(red, green, blue, 1.0);
   }
 
   void _saveOrCreateProject(BuildContext context) {

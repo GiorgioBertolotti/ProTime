@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/pages/project/widgets/edit_dialog.dart';
 import 'package:pro_time/services/activities/activities_service.dart';
 
 class ActivityTile extends StatelessWidget {
@@ -33,7 +33,7 @@ class ActivityTile extends StatelessWidget {
                     color: Colors.black12,
                     blurRadius: 2.0,
                     offset: Offset(0.0, 4.0),
-                  )
+                  ),
           ],
         ),
         child: Container(
@@ -148,53 +148,13 @@ class ActivityTile extends StatelessWidget {
       return toReturn;
   }
 
-  _editActivity(BuildContext context, Activity toEdit) {
-    Picker picker = Picker(
-      adapter: NumberPickerAdapter(
-        data: [
-          NumberPickerColumn(
-            initValue: toEdit.duration.inHours,
-            begin: 0,
-            end: 999,
-            suffix: Text(
-              "h",
-              style: TextStyle(color: Colors.blue, fontSize: 22.0),
-            ),
-          ),
-          NumberPickerColumn(
-
-            initValue: toEdit.duration.inMinutes % 60,
-            begin: 0,
-            end: 60,
-            suffix: Text(
-              "m",
-              style: TextStyle(color: Colors.blue, fontSize: 22.0),
-            ),
-          ),
-          NumberPickerColumn(
-            initValue: toEdit.duration.inSeconds % 60,
-            begin: 0,
-            end: 60,
-            suffix: Text(
-              "s",
-              style: TextStyle(color: Colors.blue, fontSize: 22.0),
-            ),
-          ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      title: Text("Duration"),
-      textAlign: TextAlign.left,
-      textStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      selectedTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      columnPadding: const EdgeInsets.all(8.0),
-      onConfirm: (Picker picker, List value) async {
-        final newDuration = Duration(hours: value[0], minutes: value[1], seconds: value[2]);
-        _activitiesService.replaceActivity(activity.copyWith(duration: newDuration));
-      },
-      confirmTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-      cancelTextStyle: const TextStyle(color: Colors.blue, fontSize: 22.0),
-    );
-    picker.showModal(context);
+  void _editActivity(BuildContext context, Activity toEdit) async {
+    Activity edited = await showDialog(
+      context: context,
+      builder: (ctx) => EditActivityDialog(toEdit));
+    if (edited != null) {
+      _activitiesService.replaceActivity(activity);
+    }
   }
+
 }

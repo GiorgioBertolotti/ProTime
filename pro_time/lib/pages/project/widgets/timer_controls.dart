@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_time/model/time.dart';
 
-class TimerControls extends StatefulWidget {
+class TimerControls extends StatelessWidget {
   TimerControls({
     this.startCallback,
     this.pauseCallback,
@@ -19,35 +19,30 @@ class TimerControls extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
-  _TimerControlsState createState() => _TimerControlsState();
-}
-
-class _TimerControlsState extends State<TimerControls> {
-  @override
   Widget build(BuildContext context) {
-    switch (widget.state) {
+    switch (state) {
       case TimerState.STOPPED:
-        return _buildStartButton();
+        return _buildStartButton(context);
       case TimerState.STARTED:
         return Column(
           children: [
-            _buildPauseButton(),
+            _buildPauseButton(context),
             SizedBox(height: 30.0),
-            _buildStopButton(scale: 0.5),
+            _buildStopButton(context, scale: 0.5),
           ],
         );
       case TimerState.PAUSED:
         return Column(
           children: [
-            _buildStartButton(),
+            _buildStartButton(context),
             SizedBox(height: 30.0),
-            _buildStopButton(scale: 0.5),
+            _buildStopButton(context, scale: 0.5),
           ],
         );
       case TimerState.DISABLED:
         return Column(
           children: [
-            _buildStartButton(color: Theme.of(context).disabledColor),
+            _buildStartButton(context, color: Theme.of(context).disabledColor),
           ],
         );
       default:
@@ -55,26 +50,33 @@ class _TimerControlsState extends State<TimerControls> {
     }
   }
 
-  Widget _buildStartButton({double scale = 1.0, Color color = const Color(0xFF37C33C)}) {
+  Widget _buildStartButton(BuildContext context,
+      {double scale = 1.0, Color color = const Color(0xFF37C33C)}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
         color: color,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () => widget.startCallback(),
+          enableFeedback: enabled,
+          onTap: () => startCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(
@@ -90,26 +92,32 @@ class _TimerControlsState extends State<TimerControls> {
     );
   }
 
-  Widget _buildStopButton({double scale = 1.0}) {
+  Widget _buildStopButton(BuildContext context, {double scale = 1.0}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
         color: Color(0xFFFF3D00),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () => widget.stopCallback(),
+          enableFeedback: enabled,
+          onTap: () => stopCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(
@@ -125,26 +133,32 @@ class _TimerControlsState extends State<TimerControls> {
     );
   }
 
-  Widget _buildPauseButton({double scale = 1.0}) {
+  Widget _buildPauseButton(BuildContext context, {double scale = 1.0}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
       decoration: BoxDecoration(
         color: Color(0xFFFFEB3B),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2.0,
-            offset: Offset(0.0, 4.0),
-          )
+          Theme.of(context).brightness == Brightness.dark
+              ? BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
+              : BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 2.0,
+                  offset: Offset(0.0, 4.0),
+                )
         ],
         shape: BoxShape.circle,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () => widget.pauseCallback(),
+          enableFeedback: enabled,
+          onTap: () => pauseCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(

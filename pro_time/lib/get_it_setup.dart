@@ -2,6 +2,9 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:pro_time/database/db.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pro_time/model/deprecated/activity_adapter.dart';
+import 'package:pro_time/model/deprecated/projects_adapter.dart';
+import 'package:pro_time/model/deprecated/subactivity_adapter.dart';
 import 'package:pro_time/repository/activities/activities_db.dart';
 import 'package:pro_time/repository/activities/activities_repo.dart';
 import 'package:pro_time/repository/projects/projects_db.dart';
@@ -30,4 +33,13 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton(() => TimerService(timerRepo));
   getIt.registerLazySingleton(() => ActivitiesService(activitiesRepo));
   getIt.registerLazySingleton(() => ThemeService(themeBox));
+
+  _migrateHiveToSqlite();
+}
+
+void _migrateHiveToSqlite() async  {
+  Hive.registerAdapter(ProjectsAdapter(), 35);
+  Hive.registerAdapter(ActivityAdapter(), 36);
+  Hive.registerAdapter(SubActivityAdapter(), 37);
+  Hive.openBox('projects');
 }

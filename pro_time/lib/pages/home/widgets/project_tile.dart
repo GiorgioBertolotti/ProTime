@@ -132,9 +132,7 @@ class ProjectTile extends StatelessWidget {
   _deleteProject(BuildContext context, Project project) {
     showDialog(
       context: context,
-      builder: (ctx) {
-        return DeleteProjectDialog(project);
-      },
+      builder: (ctx) => DeleteProjectDialog(project),
     );
   }
 
