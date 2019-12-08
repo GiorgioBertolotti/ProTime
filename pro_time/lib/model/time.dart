@@ -44,20 +44,29 @@ class TimerInfo {
 }
 
 class ProTimeStopwatch {
-  final Stopwatch _stopWatch = Stopwatch();
   Duration _initialOffset;
+  DateTime _start;
 
   ProTimeStopwatch({Duration initialOffset = Duration.zero})
       : _initialOffset = initialOffset;
 
-  start() => _stopWatch.start();
-
-  stop() => _stopWatch.stop();
-
-  reset({Duration newInitialOffset}) {
-    _stopWatch.reset();
-    _initialOffset = newInitialOffset ?? _initialOffset;
+  start() {
+    _start = DateTime.now();
   }
 
-  Duration get elapsed => _stopWatch.elapsed + _initialOffset;
+  stop() {
+    if (_start != null) {
+      _initialOffset += DateTime.now().difference(_start);
+      _start = null;
+    }
+  }
+
+  reset({Duration newInitialOffset}) {
+    _start = null;
+    _initialOffset = newInitialOffset ?? Duration.zero;
+  }
+
+  Duration get elapsed =>
+      (_start != null ? DateTime.now().difference(_start) : Duration.zero) +
+      _initialOffset;
 }
