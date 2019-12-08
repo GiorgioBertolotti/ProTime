@@ -14,8 +14,9 @@ class ProjectsDb extends ProjectsRepo {
   Stream<Project> getProject(int projectId) =>
       protimeDb.projectDao.watchProject(projectId);
 
+  // Returns auto generated id
   @override
-  insertProject(Project project) => protimeDb.projectDao.insertProject(project);
+  Future<int> insertProject(Project project) => protimeDb.projectDao.insertProject(project);
 
   @override
   Future<void> replaceProject(Project project) =>

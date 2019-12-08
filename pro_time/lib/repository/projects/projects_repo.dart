@@ -8,7 +8,8 @@ abstract class ProjectsRepo {
   Stream<Project> getProject(int projectId);
   Stream<ProjectWithActivities> watchProjectWithActivities(int projectId);
   Future<void> replaceProject(Project project);
-  Future<void> insertProject(Project project);
+  // insertProject adds a new project and returns the generated id
+  Future<int> insertProject(Project project);
   Future<void> deleteProject(int projectId);
 
 }

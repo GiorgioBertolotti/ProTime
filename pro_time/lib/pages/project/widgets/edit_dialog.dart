@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_time/database/db.dart';
-import 'package:pro_time/main.dart';
 import 'package:pro_time/pages/project/widgets/edit_button.dart';
 
 class EditActivityDialog extends StatefulWidget {
@@ -120,15 +119,17 @@ class EditActivityDialogState extends State<EditActivityDialog> {
                     const TextStyle(color: Colors.blue, fontSize: 22.0),
                 columnPadding: const EdgeInsets.all(8.0),
                 onConfirm: (Picker picker, List value) async {
-                  setState(
-                    () => _edited = _edited.copyWith(
+                  setState(() {
+                    _edited = _edited.copyWith(
                       duration: Duration(
                         hours: value[0],
                         minutes: value[1],
                         seconds: value[2],
                       ),
-                    ),
-                  );
+                    );
+
+                    print(_edited);
+                  });
                 },
                 confirmTextStyle:
                     const TextStyle(color: Colors.blue, fontSize: 22.0),
@@ -149,18 +150,15 @@ class EditActivityDialogState extends State<EditActivityDialog> {
       ),
       actions: [
         FlatButton(
-          textColor: Colors.deepOrange,
           child: Text("Cancel"),
+          textColor: Theme.of(context).textTheme.button.color,
           onPressed: () {
-            ProTime.navigatorKey.currentState.pop();
+            Navigator.of(context).pop();
           },
         ),
         FlatButton(
-          textColor: Theme.of(context).textTheme.button.color,
           child: Text("Update"),
-          onPressed: () {
-            ProTime.navigatorKey.currentState.pop(_edited);
-          },
+          onPressed: () => Navigator.of(context).pop(_edited),
         ),
       ],
     );

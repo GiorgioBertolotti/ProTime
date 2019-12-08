@@ -79,7 +79,7 @@ class _ProjectPageState extends State<ProjectPage>
                         ),
                         Positioned(
                           bottom: 110.0,
-                          left: 60.0,
+                          left: 30.0,
                           child: NotificationToggle(
                             backgroundColor: _project.mainColor,
                             notificationEnabled: _project.notificationEnabled,
@@ -98,7 +98,7 @@ class _ProjectPageState extends State<ProjectPage>
                         ),
                         (activities.length > 0)
                             ? Positioned(
-                                bottom: 30.0,
+                                bottom: 60.0,
                                 left: 0.0,
                                 right: 0.0,
                                 child: Column(
@@ -143,7 +143,7 @@ class _ProjectPageState extends State<ProjectPage>
                     shrinkWrap: true,
                     physics: BouncingScrollPhysics(),
                     itemCount: activities.length,
-                    itemBuilder: (bctx, index) {
+                    itemBuilder: (BuildContext context, int index) {
                       Activity activity = activities.reversed.toList()[index];
                       return ActivityTile(activity);
                     },
@@ -215,7 +215,7 @@ class _ProjectPageState extends State<ProjectPage>
     return TimeStatsText(title: "AVG", hrs: hrs, mins: mins, secs: secs);
   }
 
-  scrollDown(List<Activity> activities) {
+  void scrollDown(List<Activity> activities) {
     double scrollTo;
     double chartHeight = (activities.length > 0) ? 230.0 : 0.0;
 

@@ -67,6 +67,6 @@ class ActivityDao extends DatabaseAccessor<ProtimeDb> with _$ActivityDaoMixin {
   Future<void> deleteActivity(int activityId) =>
       (delete(activities)..where((a) => a.id.equals(activityId))).go();
 
-  Future<void> insertActivity(Activity activity) =>
+  Future<int> insertActivity(Activity activity) =>
       into(activities).insert(activity);
 }

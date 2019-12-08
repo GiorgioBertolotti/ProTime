@@ -10,10 +10,9 @@ class ProjectsService {
   ProjectsRepo projectsRepo;
   ProjectsService(this.projectsRepo);
 
-  addProject(Project project) => projectsRepo.insertProject(project);
+  Future<int> addProject(Project project) => projectsRepo.insertProject(project);
   replaceProject(Project project) => projectsRepo.replaceProject(project);
-  deleteProject(int projectId) {
-  }
+  Future<void> deleteProject(int projectId) => projectsRepo.deleteProject(projectId);
 
   Stream<Project> getProject(int projectId) => projectsRepo.getProject(projectId);
 

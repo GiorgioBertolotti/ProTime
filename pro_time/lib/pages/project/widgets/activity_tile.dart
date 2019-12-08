@@ -69,9 +69,9 @@ class ActivityTile extends StatelessWidget {
           ),
         ),
       ),
-      actions: _buildActivityActions(context, activity),
+      actions: _buildActivityActions(context),
       secondaryActions:
-          _buildActivityActions(context, activity, secondary: true),
+          _buildActivityActions(context, secondary: true),
     );
   }
 
@@ -124,7 +124,7 @@ class ActivityTile extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildActivityActions(BuildContext context, Activity activity,
+  List<Widget> _buildActivityActions(BuildContext context,
       {bool secondary = false}) {
     final List<Widget> toReturn = [
       IconSlideAction(
@@ -150,11 +150,9 @@ class ActivityTile extends StatelessWidget {
 
   void _editActivity(BuildContext context, Activity toEdit) async {
     Activity edited = await showDialog(
-      context: context,
-      builder: (ctx) => EditActivityDialog(toEdit));
+        context: context, builder: (ctx) => EditActivityDialog(toEdit));
     if (edited != null) {
-      _activitiesService.replaceActivity(activity);
+      _activitiesService.replaceActivity(edited);
     }
   }
-
 }

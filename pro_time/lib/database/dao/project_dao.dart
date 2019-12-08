@@ -13,7 +13,7 @@ class ProjectDao extends DatabaseAccessor<ProtimeDb> with _$ProjectDaoMixin {
   Stream<List<Project>> get watchProjects => select(projects).watch();
   Stream<Project> watchProject(int projectId) => (select(projects)..where((project) => project.id.equals(projectId))).watchSingle();
 
-  Future<void> insertProject(Project project) => into(projects).insert(project);
+  Future<int> insertProject(Project project) => into(projects).insert(project);
   Future<void> replaceProject(Project project) => update(projects).replace(project);
   Future<void> deleteProject(int projectId) => (delete(projects)..where((p) => p.id.equals(projectId))).go();
 

@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pro_time/model/deprecated/activity_adapter.dart';
 import 'package:pro_time/model/deprecated/projects_adapter.dart';
 import 'package:pro_time/model/deprecated/subactivity_adapter.dart';
+import 'package:pro_time/model/deprecated/projects.dart' as DeprecatedProject;
 import 'package:pro_time/repository/activities/activities_db.dart';
 import 'package:pro_time/repository/activities/activities_repo.dart';
 import 'package:pro_time/repository/projects/projects_db.dart';
@@ -34,12 +35,44 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton(() => ActivitiesService(activitiesRepo));
   getIt.registerLazySingleton(() => ThemeService(themeBox));
 
-  _migrateHiveToSqlite();
+  await _migrateHiveToSqlite();
 }
 
-void _migrateHiveToSqlite() async  {
+Future<void> _migrateHiveToSqlite() async {
   Hive.registerAdapter(ProjectsAdapter(), 35);
   Hive.registerAdapter(ActivityAdapter(), 36);
   Hive.registerAdapter(SubActivityAdapter(), 37);
-  Hive.openBox('projects');
+  final projectsBox = await Hive.openBox('projects');
+  List<DeprecatedProject.Project> projects =
+      projectsBox.values.toList().cast<DeprecatedProject.Project>();
+  if (projects.length != 0) {
+    for (var legacyProject in projects) {
+      final project = Project(
+          id: null,
+          created: legacyProject.created,
+          mainColor: legacyProject.mainColor,
+          name: legacyProject.name,
+          notificationEnabled: legacyProject.notificationEnabled,
+          textColor: legacyProject.textColor);
+
+      final projectId = await getIt<ProjectsService>().addProject(project);
+
+      final activities = legacyProject.activities;
+      for (var legacyActivity in activities) {
+        print("im here activity: ");
+        final activity = Activity(
+          duration: legacyActivity.getDuration(),
+          projectId: projectId,
+          startDateTime: legacyActivity.getFirstStarted(),
+          id: null,
+        );
+
+        print(activity); 
+  
+        await getIt<ActivitiesService>().addActivity(activity);
+      }
+
+      await Hive.box('projects').delete(legacyProject.id);
+    }
+  }
 }
