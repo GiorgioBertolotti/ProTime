@@ -1,23 +1,20 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:pro_time/main.dart';
-import 'package:pro_time/model/project.dart';
+import 'package:pro_time/database/db.dart';
+import 'package:pro_time/get_it_setup.dart';
 import 'package:pro_time/pages/home/widgets/delete_project_dialog.dart';
 import 'package:pro_time/pages/home/widgets/project_dialog.dart';
 import 'package:pro_time/pages/project/project_page.dart';
+import 'package:pro_time/services/activities/activities_service.dart';
 
 class ProjectTile extends StatelessWidget {
-  ProjectTile(this.project, this.onDelete);
-
   final Project project;
-  final Function onDelete;
+  final ActivitiesService activitiesService = getIt<ActivitiesService>();
+  ProjectTile(this.project);
 
   @override
   Widget build(BuildContext context) {
-    Duration totalTime = project.getTotalTime();
-    String hrs = totalTime.inHours.toString() + "H\n";
-    String mins = (totalTime.inMinutes % 60).toString() + "m";
     return Slidable(
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
@@ -27,74 +24,45 @@ class ProjectTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.0),
           color: project.mainColor,
           boxShadow: [
-            Theme.of(context).brightness == Brightness.dark
-                ? BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 2.0,
-                    offset: Offset(0.0, 4.0),
-                  )
-                : BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 2.0,
-                    offset: Offset(0.0, 4.0),
-                  ),
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 2.0,
+              offset: Offset(0.0, 4.0),
+            )
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              ProTime.navigatorKey.currentState
-                  .pushNamed(ProjectPage.routeName, arguments: project.id);
-            },
-            borderRadius: BorderRadius.circular(20.0),
-            child: Container(
-              height: 75.0,
-              padding: EdgeInsets.symmetric(horizontal: 30.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: AutoSizeText(
-                      project.name,
-                      style: TextStyle(
-                        color: project.textColor,
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      minFontSize: 20.0,
-                      maxFontSize: 34.0,
+        child: InkWell(
+          onTap: () => Navigator.of(context)
+              .pushNamed(ProjectPage.routeName, arguments: project.id),
+          borderRadius: BorderRadius.circular(20.0),
+          child: Container(
+            height: 75.0,
+            padding: EdgeInsets.symmetric(horizontal: 30.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: AutoSizeText(
+                    project.name,
+                    style: TextStyle(
+                      color: project.textColor,
+                      fontSize: 30.0,
+                      fontWeight: FontWeight.w700,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 20.0,
+                    maxFontSize: 34.0,
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: TextStyle(color: project.textColor),
-                        children: [
-                          TextSpan(
-                            text: hrs,
-                            style: TextStyle(fontSize: 30.0, height: 0.9),
-                          ),
-                          TextSpan(
-                            text: mins,
-                            style: TextStyle(fontSize: 16.0, height: 0.9),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                buildHourCounter(),
+              ],
             ),
           ),
         ),
       ),
-      actions: <Widget>[
+      actions: [
         IconSlideAction(
           caption: 'Edit',
           color: Theme.of(context).scaffoldBackgroundColor,
@@ -110,7 +78,7 @@ class ProjectTile extends StatelessWidget {
           onTap: () => _deleteProject(context, project),
         ),
       ],
-      secondaryActions: <Widget>[
+      secondaryActions: [
         IconSlideAction(
           caption: 'Delete',
           color: Theme.of(context).scaffoldBackgroundColor,
@@ -129,12 +97,42 @@ class ProjectTile extends StatelessWidget {
     );
   }
 
+  Container buildHourCounter() {
+    return Container(
+      margin: const EdgeInsets.only(top: 5.0),
+      child: StreamBuilder(
+          stream: activitiesService.getDurationInProjectStream(project.id),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasError || !snapshot.hasData) {
+              return CircularProgressIndicator();
+            }
+            Duration totalTime = snapshot.data;
+            String hrs = totalTime.inHours.toString() + "H\n";
+            String mins = (totalTime.inMinutes % 60).toString() + "m";
+            return RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(color: project.textColor),
+                children: [
+                  TextSpan(
+                    text: hrs,
+                    style: TextStyle(fontSize: 30.0, height: 0.9),
+                  ),
+                  TextSpan(
+                    text: mins,
+                    style: TextStyle(fontSize: 16.0, height: 0.9),
+                  ),
+                ],
+              ),
+            );
+          }),
+    );
+  }
+
   _deleteProject(BuildContext context, Project project) {
     showDialog(
       context: context,
-      builder: (ctx) {
-        return DeleteProjectDialog(project, onDelete);
-      },
+      builder: (ctx) => DeleteProjectDialog(project),
     );
   }
 

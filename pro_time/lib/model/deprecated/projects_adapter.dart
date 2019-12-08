@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
-import 'package:pro_time/model/project.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_time/model/deprecated/projects.dart';
 
 class ProjectsAdapter extends TypeAdapter<Project> {
   @override

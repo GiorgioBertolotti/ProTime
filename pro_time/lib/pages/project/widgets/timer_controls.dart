@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pro_time/main.dart';
+import 'package:pro_time/model/time.dart';
 
-class TimerControls extends StatefulWidget {
+class TimerControls extends StatelessWidget {
   TimerControls({
     this.startCallback,
     this.pauseCallback,
     this.stopCallback,
-    this.initialState = TimerState.STOPPED,
+    this.state = TimerState.STOPPED,
     this.enabled = true,
     this.scaffoldKey,
   });
@@ -14,48 +14,35 @@ class TimerControls extends StatefulWidget {
   final Function startCallback;
   final Function stopCallback;
   final Function pauseCallback;
-  final TimerState initialState;
+  final TimerState state;
   final bool enabled;
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
-  _TimerControlsState createState() => _TimerControlsState();
-}
-
-class _TimerControlsState extends State<TimerControls> {
-  TimerState _state = TimerState.DISABLED;
-
-  @override
-  void initState() {
-    if (widget.enabled) _state = widget.initialState;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    switch (_state) {
+    switch (state) {
       case TimerState.STOPPED:
-        return _buildStartButton();
+        return _buildStartButton(context);
       case TimerState.STARTED:
         return Column(
-          children: <Widget>[
-            _buildPauseButton(),
+          children: [
+            _buildPauseButton(context),
             SizedBox(height: 30.0),
-            _buildStopButton(scale: 0.5),
+            _buildStopButton(context, scale: 0.5),
           ],
         );
       case TimerState.PAUSED:
         return Column(
-          children: <Widget>[
-            _buildStartButton(),
+          children: [
+            _buildStartButton(context),
             SizedBox(height: 30.0),
-            _buildStopButton(scale: 0.5),
+            _buildStopButton(context, scale: 0.5),
           ],
         );
       case TimerState.DISABLED:
         return Column(
           children: [
-            _buildStartButton(color: Theme.of(context).disabledColor),
+            _buildStartButton(context, color: Theme.of(context).disabledColor),
           ],
         );
       default:
@@ -63,7 +50,7 @@ class _TimerControlsState extends State<TimerControls> {
     }
   }
 
-  Widget _buildStartButton(
+  Widget _buildStartButton(BuildContext context,
       {double scale = 1.0, Color color = const Color(0xFF37C33C)}) {
     return Container(
       height: 150.0 * scale,
@@ -88,24 +75,8 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () {
-            if (!widget.enabled) {
-              if (widget.scaffoldKey != null) {
-                widget.scaffoldKey.currentState.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        "You have to stop the current activity before starting another."),
-                  ),
-                );
-              }
-              return;
-            }
-            setState(() {
-              _state = TimerState.STARTED;
-            });
-            if (widget.startCallback != null) widget.startCallback();
-          },
+          enableFeedback: enabled,
+          onTap: () => startCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(
@@ -121,7 +92,7 @@ class _TimerControlsState extends State<TimerControls> {
     );
   }
 
-  Widget _buildStopButton({double scale = 1.0}) {
+  Widget _buildStopButton(BuildContext context, {double scale = 1.0}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
@@ -145,24 +116,8 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () {
-            if (!widget.enabled) {
-              if (widget.scaffoldKey != null) {
-                widget.scaffoldKey.currentState.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        "You have to stop the current activity before starting another."),
-                  ),
-                );
-              }
-              return;
-            }
-            setState(() {
-              _state = TimerState.STOPPED;
-            });
-            if (widget.stopCallback != null) widget.stopCallback();
-          },
+          enableFeedback: enabled,
+          onTap: () => stopCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(
@@ -178,7 +133,7 @@ class _TimerControlsState extends State<TimerControls> {
     );
   }
 
-  Widget _buildPauseButton({double scale = 1.0}) {
+  Widget _buildPauseButton(BuildContext context, {double scale = 1.0}) {
     return Container(
       height: 150.0 * scale,
       width: 150.0 * scale,
@@ -202,24 +157,8 @@ class _TimerControlsState extends State<TimerControls> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          enableFeedback: widget.enabled,
-          onTap: () {
-            if (!widget.enabled) {
-              if (widget.scaffoldKey != null) {
-                widget.scaffoldKey.currentState.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        "You have to stop the current activity before starting another."),
-                  ),
-                );
-              }
-              return;
-            }
-            setState(() {
-              _state = TimerState.PAUSED;
-            });
-            if (widget.pauseCallback != null) widget.pauseCallback();
-          },
+          enableFeedback: enabled,
+          onTap: () => pauseCallback(),
           borderRadius: BorderRadius.circular(100.0),
           child: Container(
             padding: EdgeInsets.only(

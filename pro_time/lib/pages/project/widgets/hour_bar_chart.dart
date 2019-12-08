@@ -1,26 +1,32 @@
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_time/model/project.dart';
+import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/model/project_with_activities.dart';
 import 'package:pro_time/pages/project/widgets/date_range_text.dart';
-import 'package:pro_time/pages/project/widgets/stepper_button.dart';
+import 'package:pro_time/services/activities/activities_service.dart';
+import 'package:pro_time/widgets/stepper_button.dart';
 
 class HourBarChart extends StatefulWidget {
-  HourBarChart(this.project);
+  final ProjectWithActivities projectWithActivities;
+  final ActivitiesService activitiesService = getIt<ActivitiesService>();
 
-  final Project project;
+  HourBarChart(this.projectWithActivities);
 
   @override
   _HourBarChartState createState() => _HourBarChartState();
 }
 
 class _HourBarChartState extends State<HourBarChart> {
+  StreamController<List<Duration>> streamController = StreamController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   double maxHours = 0.0;
 
   @override
   void initState() {
-    setWeek();
+    getThisWeeksActivities();
     super.initState();
   }
 
@@ -32,13 +38,9 @@ class _HourBarChartState extends State<HourBarChart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             StepperButton(
-              onLeftTap: () => setState(() {
-                shiftWeekLeft(true);
-              }),
+              onLeftTap: () => shiftWeekLeft(true),
               onRightTap: DateTime.now().isAfter(endDate)
-                  ? () => setState(() {
-                        shiftWeekLeft(false);
-                      })
+                  ? () => shiftWeekLeft(false)
                   : null,
             ),
             DateRangeText(startDate: startDate, endDate: endDate)
@@ -47,10 +49,19 @@ class _HourBarChartState extends State<HourBarChart> {
         SizedBox(
           height: 10.0,
         ),
-        Expanded(
-          child: BarChart(
-            mainBarData(getBarChartData(getWeekActivities())),
-          ),
+        StreamBuilder(
+          stream: streamController.stream,
+          builder: (context, snapshot) {
+            if (snapshot.hasError || !snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            final barChartData = getBarChartData(snapshot.data);
+            return Expanded(
+              child: BarChart(
+                mainBarData(barChartData),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -60,7 +71,7 @@ class _HourBarChartState extends State<HourBarChart> {
     return BarChartData(
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
-          tooltipBgColor: widget.project.mainColor,
+          tooltipBgColor: widget.projectWithActivities.mainColor,
           getTooltipItem: (BarChartGroupData groupData, int groupIndex,
               BarChartRodData rodData, int rodIndex) {
             List<String> days = [
@@ -75,7 +86,7 @@ class _HourBarChartState extends State<HourBarChart> {
             return BarTooltipItem(
               "${days[groupIndex]} \n ${rodData.y}H",
               TextStyle(
-                color: widget.project.textColor,
+                color: widget.projectWithActivities.textColor,
               ),
             );
           },
@@ -152,35 +163,31 @@ class _HourBarChartState extends State<HourBarChart> {
   double roundDecimal(double number, int decimals) =>
       double.parse(number.toStringAsFixed(decimals));
 
-  List<DateTime> weekDates = [];
-
-  List<Duration> getWeekActivities() {
-    final List<Duration> hours = [];
-    for (int i = 0; i < 7; i++) {
-      hours.add(Duration(seconds: 0));
-      for (Activity activity in widget.project.activities) {
-        if (isSameDay(weekDates[i], activity.getFirstStarted())) {
-          hours[i] = hours[i] + activity.getDuration();
-        }
-      }
-    }
-    return hours;
-  }
-
-  setWeek() {
+  void getThisWeeksActivities() async {
     DateTime today = DateTime.now();
-    weekDates.clear();
+    final List<DateTime> weekDates = [];
     for (int day = 0; day < 7; day++) {
       final days = today.weekday - day - 1;
       weekDates.add(DateTime.now().subtract(Duration(days: days)));
     }
-    startDate = weekDates[0];
-    endDate = weekDates[6];
+
+    setState(() {
+      startDate = weekDates[0];
+      endDate = weekDates[6];
+    });
+
+    final List<Future<Duration>> weekHoursFutures = [];
+    for (int i = 0; i < 7; i++) {
+      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
+          widget.projectWithActivities.project.id, weekDates[i]));
+    }
+    final hours = await Future.wait(weekHoursFutures);
+    streamController.add(hours);
   }
 
-  shiftWeekLeft(bool shiftLeft) {
+  void shiftWeekLeft(bool shiftLeft) async {
+    final List<DateTime> weekDates = [];
     final oldStartDay = startDate;
-    weekDates.clear();
     if (shiftLeft) {
       for (int day = 7; day > 0; day--) {
         weekDates.add(oldStartDay.subtract(Duration(days: day)));
@@ -190,13 +197,24 @@ class _HourBarChartState extends State<HourBarChart> {
         weekDates.add(oldStartDay.add(Duration(days: 7 + day)));
       }
     }
-    startDate = weekDates[0];
-    endDate = weekDates[6];
+
+    setState(() {
+      startDate = weekDates[0];
+      endDate = weekDates[6];
+    });
+
+    final List<Future<Duration>> weekHoursFutures = [];
+    for (int i = 0; i < 7; i++) {
+      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
+          widget.projectWithActivities.project.id, weekDates[i]));
+    }
+    final hours = await Future.wait(weekHoursFutures);
+    streamController.add(hours);
   }
 
-  bool isSameDay(DateTime one, DateTime two) {
-    return (one.day == two.day &&
-        one.month == two.month &&
-        one.year == two.year);
+  @override
+  dispose() {
+    streamController?.close();
+    super.dispose();
   }
 }
