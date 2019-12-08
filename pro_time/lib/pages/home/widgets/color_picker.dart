@@ -41,85 +41,82 @@ class _ColorDialogState extends State<ColorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text("Pick a color"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(height: 10.0),
-          GridView.count(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            crossAxisCount: 5,
-            children: List.generate(10, (index) {
-              if (index == 0) {
-                List<double> invertMatr = [
-                  -1, 0, 0, 0, 255, //
-                  0, -1, 0, 0, 255, //
-                  0, 0, -1, 0, 255, //
-                  0, 0, 0, 1, 0, //
-                ];
-                return GestureDetector(
-                  onTap: () async {
-                    var color = await openColorPickerDialog(
-                        context, "Advanced picker", _selectedColor);
-                    if (color != null)
-                      setState(() {
-                        _customColor = color;
-                        _selectedColor = _customColor;
-                      });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.all(3.0),
-                    decoration: BoxDecoration(
-                        color: _customColor == _selectedColor
-                            ? Theme.of(context).textTheme.button.color
-                            : Colors.grey.withAlpha(100),
-                        shape: BoxShape.circle),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: CircleAvatar(
-                        backgroundColor: _customColor ?? Colors.white,
-                        radius: 100.0,
-                        child: ColorFiltered(
-                          colorFilter: ColorFilter.matrix(invertMatr),
-                          child: Icon(
-                            Icons.colorize,
-                            color: _customColor ?? Colors.white,
-                            size: 20.0,
-                          ),
+      content: Container(
+        width: MediaQuery.of(context).size.width * .7,
+        padding: EdgeInsets.only(top: 10.0),
+        child: GridView.count(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          crossAxisCount: 5,
+          children: List.generate(10, (index) {
+            if (index == 0) {
+              List<double> invertMatr = [
+                -1, 0, 0, 0, 255, //
+                0, -1, 0, 0, 255, //
+                0, 0, -1, 0, 255, //
+                0, 0, 0, 1, 0, //
+              ];
+              return GestureDetector(
+                onTap: () async {
+                  var color = await openColorPickerDialog(
+                      context, "Advanced picker", _selectedColor);
+                  if (color != null)
+                    setState(() {
+                      _customColor = color;
+                      _selectedColor = _customColor;
+                    });
+                },
+                child: Container(
+                  margin: EdgeInsets.all(3.0),
+                  decoration: BoxDecoration(
+                      color: _customColor == _selectedColor
+                          ? Theme.of(context).textTheme.button.color
+                          : Colors.grey.withAlpha(100),
+                      shape: BoxShape.circle),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: CircleAvatar(
+                      backgroundColor: _customColor ?? Colors.white,
+                      radius: 100.0,
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.matrix(invertMatr),
+                        child: Icon(
+                          Icons.colorize,
+                          color: _customColor ?? Colors.white,
+                          size: 20.0,
                         ),
                       ),
                     ),
                   ),
-                );
-              } else {
-                Color color = _colors[index - 1];
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColor = color;
-                    });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.all(3.0),
-                    decoration: BoxDecoration(
-                        color:
-                            (color == _selectedColor && _customColor != color)
-                                ? Theme.of(context).textTheme.button.color
-                                : Colors.grey.withAlpha(100),
-                        shape: BoxShape.circle),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: CircleAvatar(
-                        backgroundColor: color,
-                        radius: 100.0,
-                      ),
+                ),
+              );
+            } else {
+              Color color = _colors[index - 1];
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedColor = color;
+                  });
+                },
+                child: Container(
+                  margin: EdgeInsets.all(3.0),
+                  decoration: BoxDecoration(
+                      color: (color == _selectedColor && _customColor != color)
+                          ? Theme.of(context).textTheme.button.color
+                          : Colors.grey.withAlpha(100),
+                      shape: BoxShape.circle),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: CircleAvatar(
+                      backgroundColor: color,
+                      radius: 100.0,
                     ),
                   ),
-                );
-              }
-            }),
-          )
-        ],
+                ),
+              );
+            }
+          }),
+        ),
       ),
       actions: <Widget>[
         FlatButton(

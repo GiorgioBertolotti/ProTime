@@ -29,27 +29,32 @@ String timerStateToString(TimerState state) {
 class TimerInfo {
   DateTime startDate;
   // DateTime when the user resumed the timer. This will be `null` if the
-  // user has never paused -> resumed the stopwatch. 
+  // user has never paused -> resumed the stopwatch.
   DateTime resumeDate;
   TimerState state;
   Duration totalDuration;
   int projectId;
 
-  TimerInfo({this.startDate, this.resumeDate, this.state, this.totalDuration, this.projectId});
+  TimerInfo(
+      {this.startDate,
+      this.resumeDate,
+      this.state,
+      this.totalDuration,
+      this.projectId});
 }
 
 class ProTimeStopwatch {
   final Stopwatch _stopWatch = Stopwatch();
   Duration _initialOffset;
 
-  ProTimeStopwatch({Duration initialOffset = Duration.zero}):
-    _initialOffset = initialOffset;
+  ProTimeStopwatch({Duration initialOffset = Duration.zero})
+      : _initialOffset = initialOffset;
 
   start() => _stopWatch.start();
 
   stop() => _stopWatch.stop();
 
-  reset({Duration newInitialOffset = null}) {
+  reset({Duration newInitialOffset}) {
     _stopWatch.reset();
     _initialOffset = newInitialOffset ?? _initialOffset;
   }
