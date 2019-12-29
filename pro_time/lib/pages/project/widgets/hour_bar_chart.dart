@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_time/model/project.dart';
+import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/model/project_with_activities.dart';
 import 'package:pro_time/pages/project/widgets/date_range_text.dart';
-import 'package:pro_time/pages/project/widgets/stepper_button.dart';
+import 'package:pro_time/services/activities/activities_service.dart';
+import 'package:pro_time/widgets/stepper_button.dart';
 
 class HourBarChart extends StatefulWidget {
-  HourBarChart(this.project);
+  final ProjectWithActivities projectWithActivities;
+  final ActivitiesService activitiesService = getIt<ActivitiesService>();
 
-  final Project project;
+  HourBarChart(this.projectWithActivities);
 
   @override
   _HourBarChartState createState() => _HourBarChartState();
@@ -32,13 +37,9 @@ class _HourBarChartState extends State<HourBarChart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             StepperButton(
-              onLeftTap: () => setState(() {
-                shiftWeekLeft(true);
-              }),
+              onLeftTap: () => shiftWeekLeft(true),
               onRightTap: DateTime.now().isAfter(endDate)
-                  ? () => setState(() {
-                        shiftWeekLeft(false);
-                      })
+                  ? () => shiftWeekLeft(false)
                   : null,
             ),
             DateRangeText(startDate: startDate, endDate: endDate)
@@ -47,10 +48,19 @@ class _HourBarChartState extends State<HourBarChart> {
         SizedBox(
           height: 10.0,
         ),
-        Expanded(
-          child: BarChart(
-            mainBarData(getBarChartData(getWeekActivities())),
-          ),
+        FutureBuilder(
+          initialData: null,
+          future: getWeekActivities(),
+          builder: (ctx, snapshot) {
+            if (snapshot.hasError || !snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return Expanded(
+              child: BarChart(
+                mainBarData(getBarChartData(snapshot.data)),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -60,7 +70,7 @@ class _HourBarChartState extends State<HourBarChart> {
     return BarChartData(
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
-          tooltipBgColor: widget.project.mainColor,
+          tooltipBgColor: widget.projectWithActivities.mainColor,
           getTooltipItem: (BarChartGroupData groupData, int groupIndex,
               BarChartRodData rodData, int rodIndex) {
             List<String> days = [
@@ -75,7 +85,7 @@ class _HourBarChartState extends State<HourBarChart> {
             return BarTooltipItem(
               "${days[groupIndex]} \n ${rodData.y}H",
               TextStyle(
-                color: widget.project.textColor,
+                color: widget.projectWithActivities.textColor,
               ),
             );
           },
@@ -123,6 +133,7 @@ class _HourBarChartState extends State<HourBarChart> {
   }
 
   List<BarChartGroupData> getBarChartData(List<Duration> days) {
+    maxHours = 0.0;
     int i = 0;
     return days.map((h) {
       final hours = h.inSeconds / 3600;
@@ -154,16 +165,13 @@ class _HourBarChartState extends State<HourBarChart> {
 
   List<DateTime> weekDates = [];
 
-  List<Duration> getWeekActivities() {
-    final List<Duration> hours = [];
+  Future<List<Duration>> getWeekActivities() async {
+    final List<Future<Duration>> weekHoursFutures = [];
     for (int i = 0; i < 7; i++) {
-      hours.add(Duration(seconds: 0));
-      for (Activity activity in widget.project.activities) {
-        if (isSameDay(weekDates[i], activity.getFirstStarted())) {
-          hours[i] = hours[i] + activity.getDuration();
-        }
-      }
+      weekHoursFutures.add(widget.activitiesService.getDurationForDayInProject(
+          widget.projectWithActivities.project.id, weekDates[i]));
     }
+    final hours = await Future.wait(weekHoursFutures);
     return hours;
   }
 
@@ -175,7 +183,8 @@ class _HourBarChartState extends State<HourBarChart> {
       weekDates.add(DateTime.now().subtract(Duration(days: days)));
     }
     startDate = weekDates[0];
-    endDate = weekDates[6];
+    endDate = DateTime(
+        weekDates[6].year, weekDates[6].month, weekDates[6].day, 23, 59);
   }
 
   shiftWeekLeft(bool shiftLeft) {
@@ -191,12 +200,8 @@ class _HourBarChartState extends State<HourBarChart> {
       }
     }
     startDate = weekDates[0];
-    endDate = weekDates[6];
-  }
-
-  bool isSameDay(DateTime one, DateTime two) {
-    return (one.day == two.day &&
-        one.month == two.month &&
-        one.year == two.year);
+    endDate = DateTime(
+        weekDates[6].year, weekDates[6].month, weekDates[6].day, 23, 59);
+    setState(() {});
   }
 }

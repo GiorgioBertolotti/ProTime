@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:pro_time/main.dart';
-import 'package:pro_time/model/project.dart';
+import 'package:pro_time/database/db.dart';
 import 'package:pro_time/pages/project/widgets/edit_button.dart';
 
 class EditActivityDialog extends StatefulWidget {
-  EditActivityDialog(this.activityToEdit, this.project);
-
+  EditActivityDialog(this.activityToEdit);
   final Activity activityToEdit;
-  final Project project;
 
   @override
   EditActivityDialogState createState() => EditActivityDialogState();
@@ -20,23 +17,8 @@ class EditActivityDialogState extends State<EditActivityDialog> {
 
   @override
   void initState() {
-    _setActivity(
-      start: widget.activityToEdit.getFirstStarted(),
-      duration: widget.activityToEdit.getDuration(),
-    );
+    _edited = widget.activityToEdit.copyWith();
     super.initState();
-  }
-
-  _setActivity({DateTime start, Duration duration}) {
-    if (start == null) start = _edited.getFirstStarted();
-    if (duration == null) duration = _edited.getDuration();
-    _edited = Activity();
-    _edited.subActivities.add(
-      SubActivity(
-        dateTimeStart: start,
-        activityDuration: duration,
-      ),
-    );
   }
 
   @override
@@ -51,7 +33,7 @@ class EditActivityDialogState extends State<EditActivityDialog> {
             onTap: () async {
               DateTime selectedDate = await showDatePicker(
                 context: context,
-                initialDate: _edited.getFirstStarted(),
+                initialDate: _edited.startDateTime,
                 firstDate: DateTime(2000),
                 lastDate: DateTime.now(),
               );
@@ -61,15 +43,15 @@ class EditActivityDialogState extends State<EditActivityDialog> {
                     selectedDate.year,
                     selectedDate.month,
                     selectedDate.day,
-                    _edited.getFirstStarted().hour,
-                    _edited.getFirstStarted().minute,
+                    _edited.startDateTime.hour,
+                    _edited.startDateTime.minute,
                   );
-                  _setActivity(start: dateTime);
+                  _edited = _edited.copyWith(startDateTime: dateTime);
                 });
               }
             },
             title: "Edit date",
-            text: DateFormat('yyyy-MM-dd').format(_edited.getFirstStarted()),
+            text: DateFormat('yyyy-MM-dd').format(_edited.startDateTime),
           ),
           SizedBox(height: 10.0),
           EditButton(
@@ -77,25 +59,25 @@ class EditActivityDialogState extends State<EditActivityDialog> {
               TimeOfDay picked = await showTimePicker(
                 context: context,
                 initialTime: TimeOfDay(
-                  hour: _edited.getFirstStarted().hour,
-                  minute: _edited.getFirstStarted().minute,
+                  hour: _edited.startDateTime.hour,
+                  minute: _edited.startDateTime.minute,
                 ),
               );
               if (picked != null) {
                 setState(() {
                   DateTime dateTime = DateTime(
-                    _edited.getFirstStarted().year,
-                    _edited.getFirstStarted().month,
-                    _edited.getFirstStarted().day,
+                    _edited.startDateTime.year,
+                    _edited.startDateTime.month,
+                    _edited.startDateTime.day,
                     picked.hour,
                     picked.minute,
                   );
-                  _setActivity(start: dateTime);
+                  _edited = _edited.copyWith(startDateTime: dateTime);
                 });
               }
             },
             title: "Edit time",
-            text: DateFormat('HH:mm').format(_edited.getFirstStarted()),
+            text: DateFormat('HH:mm').format(_edited.startDateTime),
           ),
           SizedBox(height: 10.0),
           EditButton(
@@ -103,7 +85,7 @@ class EditActivityDialogState extends State<EditActivityDialog> {
               Picker picker = Picker(
                 adapter: NumberPickerAdapter(data: [
                   NumberPickerColumn(
-                    initValue: _edited.getDuration().inHours,
+                    initValue: _edited.duration.inHours,
                     begin: 0,
                     end: 999,
                     suffix: Text(
@@ -112,7 +94,7 @@ class EditActivityDialogState extends State<EditActivityDialog> {
                     ),
                   ),
                   NumberPickerColumn(
-                    initValue: _edited.getDuration().inMinutes % 60,
+                    initValue: _edited.duration.inMinutes % 60,
                     begin: 0,
                     end: 60,
                     suffix: Text(
@@ -121,7 +103,7 @@ class EditActivityDialogState extends State<EditActivityDialog> {
                     ),
                   ),
                   NumberPickerColumn(
-                    initValue: _edited.getDuration().inSeconds % 60,
+                    initValue: _edited.duration.inSeconds % 60,
                     begin: 0,
                     end: 60,
                     suffix: Text(
@@ -137,15 +119,16 @@ class EditActivityDialogState extends State<EditActivityDialog> {
                     const TextStyle(color: Colors.blue, fontSize: 22.0),
                 columnPadding: const EdgeInsets.all(8.0),
                 onConfirm: (Picker picker, List value) async {
-                  //await Hive.box("projects").put(widget.project.id, widget.project);
                   setState(() {
-                    _setActivity(
+                    _edited = _edited.copyWith(
                       duration: Duration(
                         hours: value[0],
                         minutes: value[1],
                         seconds: value[2],
                       ),
                     );
+
+                    print(_edited);
                   });
                 },
                 confirmTextStyle:
@@ -157,28 +140,25 @@ class EditActivityDialogState extends State<EditActivityDialog> {
               await picker.showModal(context);
             },
             title: "Edit duration",
-            text: _addZero(_edited.getDuration().inHours) +
+            text: _addZero(_edited.duration.inHours) +
                 ":" +
-                _addZero(_edited.getDuration().inMinutes % 60) +
+                _addZero(_edited.duration.inMinutes % 60) +
                 ":" +
-                _addZero(_edited.getDuration().inSeconds % 60),
+                _addZero(_edited.duration.inSeconds % 60),
           ),
         ],
       ),
-      actions: <Widget>[
+      actions: [
         FlatButton(
-          textColor: Colors.deepOrange,
           child: Text("Cancel"),
+          textColor: Theme.of(context).textTheme.button.color,
           onPressed: () {
-            ProTime.navigatorKey.currentState.pop();
+            Navigator.of(context).pop();
           },
         ),
         FlatButton(
-          textColor: Theme.of(context).textTheme.button.color,
           child: Text("Update"),
-          onPressed: () {
-            ProTime.navigatorKey.currentState.pop(_edited);
-          },
+          onPressed: () => Navigator.of(context).pop(_edited),
         ),
       ],
     );

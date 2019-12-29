@@ -1,31 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:pro_time/model/project.dart';
-import 'package:pro_time/pages/project/widgets/edit_dialog.dart';
+import 'package:pro_time/database/db.dart';
 
-class ActivityTile extends StatefulWidget {
-  ActivityTile(this.activity, this.project,
-      {this.editCallback, this.deleteCallback});
+class ActivityTile extends StatelessWidget {
+  ActivityTile(this.activity, this.onEdit, this.onDelete);
 
   final Activity activity;
-  final Project project;
-  final Function deleteCallback;
-  final Function editCallback;
+  final Function onEdit;
+  final Function onDelete;
 
-  @override
-  _ActivityTileState createState() => _ActivityTileState();
-}
-
-class _ActivityTileState extends State<ActivityTile> {
   @override
   Widget build(BuildContext context) {
     return Slidable(
       actionPane: SlidableScrollActionPane(),
       actionExtentRatio: 0.25,
       child: Container(
-        height: 75.0,
+        height: 75,
         margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.0),
@@ -49,7 +40,7 @@ class _ActivityTileState extends State<ActivityTile> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
+            children: [
               Expanded(
                 child: RichText(
                   maxLines: 2,
@@ -59,38 +50,31 @@ class _ActivityTileState extends State<ActivityTile> {
                     children: [
                       TextSpan(
                         text: DateFormat('yyyy-MM-dd')
-                                .format(widget.activity.getFirstStarted()) +
+                                .format(activity.startDateTime) +
                             "\n",
                         style: TextStyle(fontSize: 16.0, height: 0.9),
                       ),
                       TextSpan(
-                        text: DateFormat('HH:mm')
-                            .format(widget.activity.getFirstStarted()),
+                        text:
+                            DateFormat('HH:mm').format(activity.startDateTime),
                         style: TextStyle(fontSize: 28.0, height: 0.9),
                       ),
                     ],
                   ),
                 ),
               ),
-              _buildActivityDurationText(widget.activity),
+              _buildActivityDurationText(activity),
             ],
           ),
         ),
       ),
-      actions: _buildActivityActions(widget.activity),
-      secondaryActions: _buildActivityActions(widget.activity, secondary: true),
+      actions: _buildActivityActions(context),
+      secondaryActions: _buildActivityActions(context, secondary: true),
     );
   }
 
   Widget _buildActivityDurationText(Activity activity) {
-    if (activity.getIncompleteSubActivity() != null) {
-      return Text(
-        "running\nnow",
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.grey[600]),
-      );
-    }
-    Duration totalTime = activity.getDuration();
+    Duration totalTime = activity.duration;
     int secondsCounter = totalTime.inSeconds;
     int hours = secondsCounter ~/ 60 ~/ 60;
     int minutes = (secondsCounter ~/ 60 % 60).toInt();
@@ -138,53 +122,27 @@ class _ActivityTileState extends State<ActivityTile> {
     );
   }
 
-  List<Widget> _buildActivityActions(Activity activity,
+  List<Widget> _buildActivityActions(BuildContext context,
       {bool secondary = false}) {
-    List<Widget> toReturn;
-    if (activity.getIncompleteSubActivity() != null) {
-      toReturn = <Widget>[];
-    } else {
-      toReturn = <Widget>[
-        IconSlideAction(
-          caption: 'Edit',
-          color: Theme.of(context).scaffoldBackgroundColor,
-          foregroundColor: Colors.blue,
-          icon: Icons.edit,
-          onTap: () => _editActivity(activity),
-        ),
-        IconSlideAction(
-          caption: 'Delete',
-          color: Theme.of(context).scaffoldBackgroundColor,
-          foregroundColor: Colors.red,
-          icon: Icons.delete,
-          onTap: () => _deleteActivity(activity),
-        ),
-      ];
-    }
+    final List<Widget> toReturn = [
+      IconSlideAction(
+        caption: 'Edit',
+        color: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Colors.blue,
+        icon: Icons.edit,
+        onTap: onEdit,
+      ),
+      IconSlideAction(
+        caption: 'Delete',
+        color: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Colors.red,
+        icon: Icons.delete,
+        onTap: onDelete,
+      ),
+    ];
     if (secondary)
       return toReturn.reversed.toList();
     else
       return toReturn;
-  }
-
-  _editActivity(Activity toEdit) async {
-    var edited = await showDialog(
-      context: context,
-      builder: (ctx) {
-        return EditActivityDialog(toEdit, widget.project);
-      },
-    );
-    if (edited != null) {
-      widget.project.activities.remove(toEdit);
-      widget.project.activities.add(edited);
-      await Hive.box("projects").put(widget.project.id, widget.project);
-    }
-    if (widget.editCallback != null) widget.editCallback();
-  }
-
-  _deleteActivity(Activity toDelete) async {
-    widget.project.activities.remove(toDelete);
-    await Hive.box("projects").put(widget.project.id, widget.project);
-    if (widget.deleteCallback != null) widget.deleteCallback();
   }
 }

@@ -1,7 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_time/get_it_setup.dart';
-import 'package:pro_time/resources/theme_service.dart';
+import 'package:pro_time/services/theme/theme_service.dart';
 
 class SettingsPage extends StatelessWidget {
   static const routeName = "settings_page";

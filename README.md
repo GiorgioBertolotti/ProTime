@@ -1,4 +1,4 @@
-<p align="center"><a href="https://bertolotti.dev/ProTime"><img height="125px" width="125px" src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/master/icon/icon.png" alt="ProTime"/></a></p>
+<p align="center"><a href="https://bertolotti.dev/ProTime"><img height="125px" width="125px" src="https://raw.githubusercontent.com/GiorgioBertolotti/ProTime/master/resources/icon.png" alt="ProTime"/></a></p>
 
 # ProTime
 

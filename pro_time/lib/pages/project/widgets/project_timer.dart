@@ -1,70 +1,64 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hive/hive.dart';
-import 'package:pro_time/main.dart';
-import 'package:pro_time/model/project.dart';
-import 'package:pro_time/pages/project/widgets/controls.dart';
+import 'package:pro_time/database/db.dart';
+import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/model/time.dart';
+import 'package:pro_time/pages/project/widgets/timer_controls.dart';
 import 'package:pro_time/pages/project/widgets/timer_text.dart';
-import 'package:pro_time/resources/application_state.dart';
-import 'package:provider/provider.dart';
+import 'package:pro_time/services/activities/activities_service.dart';
+import 'package:pro_time/services/timer/timer_service.dart';
+import 'package:pro_time/utils/notifications.dart';
 
 class ProjectTimer extends StatefulWidget {
-  ProjectTimer(
-    this.project,
-    this.scaffoldKey, {
-    this.startCallback,
-    this.pauseCallback,
-    this.stopCallback,
-  });
-
+  final TimerService timerService = getIt<TimerService>();
+  final activitiesService = getIt<ActivitiesService>();
   final GlobalKey<ScaffoldState> scaffoldKey;
   final Project project;
-  final Function startCallback;
-  final Function pauseCallback;
-  final Function stopCallback;
+
+  ProjectTimer({this.scaffoldKey, this.project});
 
   @override
   _ProjectTimerState createState() => _ProjectTimerState();
 }
 
-class _ProjectTimerState extends State<ProjectTimer>
-    with TickerProviderStateMixin {
-  bool _first = true;
+class _ProjectTimerState extends State<ProjectTimer> {
+  int _secondsCounter = 0;
   bool _timerVisibility = true;
+  StreamSubscription _timerSubscription;
   Timer _blinkTimer;
-  Duration _halfSec = const Duration(milliseconds: 0500);
-  Project _project;
 
   @override
   void initState() {
-    _project = widget.project;
     super.initState();
+    if (widget.timerService.activeProjectId != null &&
+        widget.timerService.activeProjectId == widget.project.id) {
+      _secondsCounter = widget.timerService.getActiveDuration().inSeconds;
+    }
+    _timerSubscription = widget.timerService
+        .getActiveDurationStream()
+        .listen((Duration duration) {
+      if (duration.inSeconds != _secondsCounter &&
+          widget.timerService.activeProjectId == widget.project.id) {
+        setState(() => _secondsCounter = duration.inSeconds);
+      }
+    });
   }
 
   @override
   void dispose() {
     if (_blinkTimer != null) _blinkTimer.cancel();
+    _timerSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ApplicationState appState = Provider.of<ApplicationState>(context);
-    if (_first) {
-      _first = false;
-      if ((appState.getCurrentProject() == null ||
-              appState.getCurrentProject().id == _project.id) &&
-          appState.timerState == TimerState.PAUSED)
-        _startBlink();
-      else
-        _stopBlink();
-    }
     return Column(
       children: [
-        Center(
-          child: Opacity(
-            opacity: _timerVisibility ? 1 : 0,
+        Opacity(
+          opacity: _timerVisibility ? 1 : 0,
+          child: Center(
             child: _buildTimer(),
           ),
         ),
@@ -74,33 +68,20 @@ class _ProjectTimerState extends State<ProjectTimer>
             startCallback: _startTimer,
             pauseCallback: _pauseTimer,
             stopCallback: _stopTimer,
-            initialState: ((appState.getCurrentProject() != null &&
-                        appState.getCurrentProject().id != _project.id) &&
-                    (appState.timerState == TimerState.PAUSED ||
-                        appState.timerState == TimerState.STARTED))
-                ? TimerState.DISABLED
-                : appState.timerState,
-            enabled: appState.getCurrentProject() == null ||
-                appState.getCurrentProject().id == _project.id,
+            state: (widget.timerService.activeProjectId == widget.project.id || widget.timerService.timerState == TimerState.STOPPED)
+                ? widget.timerService.timerState
+                : TimerState.DISABLED,
             scaffoldKey: widget.scaffoldKey,
           ),
-        ),
+        )
       ],
     );
   }
 
   Widget _buildTimer() {
-    ApplicationState appState = Provider.of<ApplicationState>(context);
-    int secondsCounter;
-    if (appState.getCurrentProject() == null ||
-        appState.getCurrentProject().id == _project.id)
-      secondsCounter = appState.getSecondsCounter() ?? 0;
-    else
-      secondsCounter = 0;
-    if (secondsCounter == null) return Container();
-    int hours = secondsCounter ~/ 60 ~/ 60;
-    int minutes = (secondsCounter ~/ 60 % 60).toInt();
-    int seconds = (secondsCounter % 60 % 60);
+    int hours = _secondsCounter ~/ 60 ~/ 60;
+    int minutes = (_secondsCounter ~/ 60 % 60).toInt();
+    int seconds = (_secondsCounter % 60 % 60);
     double hoursSize = (hours != 0) ? 40.0 : 0.0;
     double minutesSize = (hours != 0) ? 20.0 : 40.0;
     double secondsSize = 20.0;
@@ -114,50 +95,44 @@ class _ProjectTimerState extends State<ProjectTimer>
     );
   }
 
-  _updateProject() async {
-    _project = await Hive.box("projects").get(_project.id);
-  }
-
   _startTimer() {
-    ApplicationState appState = Provider.of<ApplicationState>(context);
-    setState(() {
-      if (appState.getCurrentProject() == null ||
-          appState.getCurrentProject() != _project)
-        appState.setCurrentProject(_project);
-      appState.startTimer();
+    final isPaused = widget.timerService.timerState == TimerState.PAUSED &&
+        widget.timerService.activeProjectId == widget.project.id;
+    if (widget.timerService.timerState == TimerState.STOPPED || isPaused) {
+      widget.timerService.startTimer(widget.project.id);
+      _timerSubscription?.resume();
       _stopBlink();
-      _updateProject();
-    });
-    _showNotification(_project);
-    if (widget.startCallback != null) widget.startCallback();
+      showNotification(widget.project);
+    } else {
+      widget.scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          content: Text(
+              "You have to stop the current activity before starting another."),
+        ),
+      );
+    }
   }
 
   _pauseTimer() {
-    ApplicationState appState = Provider.of<ApplicationState>(context);
-    setState(() {
-      appState.pauseTimer();
-      _startBlink();
-      _updateProject();
-    });
-    _cancelNotifications();
-    if (widget.pauseCallback != null) widget.pauseCallback();
+    widget.timerService.pauseTimer();
+    _timerSubscription?.pause();
+    _startBlink();
+    cancelNotifications();
   }
 
   _stopTimer() {
-    ApplicationState appState = Provider.of<ApplicationState>(context);
+    final Activity activity = widget.timerService.stopTimer();
+    widget.activitiesService.addActivity(activity);
     setState(() {
-      appState.stopTimer();
-      _stopBlink();
-      _updateProject();
+      _secondsCounter = 0;
     });
-    _cancelNotifications();
-    if (widget.stopCallback != null) widget.stopCallback();
+    _stopBlink();
+    cancelNotifications();
   }
 
   _startBlink() {
-    if (_blinkTimer != null && _blinkTimer.isActive) _blinkTimer.cancel();
     _blinkTimer = Timer.periodic(
-      _halfSec,
+      Duration(milliseconds: 500),
       (Timer timer) => setState(() {
         _timerVisibility = !_timerVisibility;
       }),
@@ -166,45 +141,8 @@ class _ProjectTimerState extends State<ProjectTimer>
 
   _stopBlink() {
     if (_blinkTimer != null && _blinkTimer.isActive) _blinkTimer.cancel();
-    _blinkTimer = Timer.periodic(
-      _halfSec * 2,
-      (Timer timer) => setState(() {}),
-    );
     setState(() {
       _timerVisibility = true;
     });
-  }
-
-  _showNotification(Project project) async {
-    if (!(project.notificationEnabled ?? true)) return;
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'protime',
-      'ProTime',
-      'This channel is used by ProTime to send timer reminders.',
-      importance: Importance.Max,
-      priority: Priority.High,
-      ongoing: true,
-      autoCancel: false,
-      ticker: 'ticker',
-      enableLights: true,
-      color: project.mainColor,
-      ledColor: project.mainColor,
-      ledOnMs: 1000,
-      ledOffMs: 500,
-    );
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Tracking active',
-      'The tracking of ' + project.name + " is running!",
-      platformChannelSpecifics,
-      payload: project.id,
-    );
-  }
-
-  _cancelNotifications() async {
-    await flutterLocalNotificationsPlugin.cancelAll();
   }
 }

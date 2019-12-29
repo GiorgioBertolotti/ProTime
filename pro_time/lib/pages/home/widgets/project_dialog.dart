@@ -1,11 +1,13 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:pro_time/main.dart';
-import 'package:pro_time/model/project.dart';
-import 'package:hive/hive.dart';
+import 'package:pro_time/database/db.dart';
+import 'package:pro_time/get_it_setup.dart';
+import 'package:pro_time/services/projects/projects_service.dart';
 import 'package:pro_time/pages/home/widgets/color_button.dart';
 
 class ProjectDialog extends StatefulWidget {
+  final projectsService = getIt<ProjectsService>();
   ProjectDialog({this.projectToEdit});
 
   final Project projectToEdit;
@@ -45,7 +47,7 @@ class _ProjectDialogState extends State<ProjectDialog> {
       title: Text(_editMode ? "Edit project" : "Create new project"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
+        children: [
           SizedBox(height: 10.0),
           TextField(
             controller: _nameController,
@@ -80,13 +82,11 @@ class _ProjectDialogState extends State<ProjectDialog> {
           ),
         ],
       ),
-      actions: <Widget>[
+      actions: [
         FlatButton(
           textColor: Colors.deepOrange,
           child: Text("Cancel"),
-          onPressed: () {
-            ProTime.navigatorKey.currentState.pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
         FlatButton(
           textColor: Theme.of(context).textTheme.button.color,
@@ -112,6 +112,7 @@ class _ProjectDialogState extends State<ProjectDialog> {
       });
     }
   }
+
 
   List<Color> _pickRandomColors() {
     List<Color> colors = List(2);
@@ -147,20 +148,22 @@ class _ProjectDialogState extends State<ProjectDialog> {
   void _saveOrCreateProject(BuildContext context) {
     Project proj;
     if (_editMode) {
-      proj = widget.projectToEdit;
-      proj.name = _nameController.text;
-      proj.mainColor = _selectedMainColor;
-      proj.textColor = _selectedTextColor;
-    } else {
-      proj = Project(
+      proj = widget.projectToEdit.copyWith(
         name: _nameController.text,
         mainColor: _selectedMainColor,
         textColor: _selectedTextColor,
-        created: DateTime.now(),
-        activities: List<Activity>(),
       );
+      widget.projectsService.replaceProject(proj);
+    } else {
+      proj = Project(
+        notificationEnabled: false,
+        name: _nameController.text,
+        mainColor: _selectedMainColor,
+        textColor: _selectedTextColor,
+        created: DateTime.now(), id: null,
+      );
+      widget.projectsService.addProject(proj);
     }
-    Hive.box("projects").put(proj.id, proj);
-    ProTime.navigatorKey.currentState.pop();
+    Navigator.of(context).pop();
   }
 }

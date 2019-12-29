@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_time/pages/home/home.dart';
+import 'package:pro_time/pages/home/home_page.dart';
 import 'package:pro_time/pages/project/project_page.dart';
 import 'package:pro_time/pages/settings/settings_page.dart';
 
