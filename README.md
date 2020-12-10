@@ -10,6 +10,8 @@
 [![Issues](https://img.shields.io/github/issues/GiorgioBertolotti/ProTime.svg)](https://github.com/GiorgioBertolotti/ProTime/issues)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
+<a href='https://www.buymeacoffee.com/GiorgioZem' target="_blank"><img alt='Buy me a coffee' src='https://cdn.buymeacoffee.com/buttons/lato-yellow.png' height="38" width="160" /></a>
+
 ## Why? [![start with why](https://img.shields.io/badge/start%20with-why%3F-brightgreen.svg?style=flat)](http://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action)
 
 This app was born from the need of a simple and minimal solution to keep track of the times dedicated to personal projects.
